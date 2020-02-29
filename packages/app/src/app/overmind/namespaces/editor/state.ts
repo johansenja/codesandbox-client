@@ -1,18 +1,9 @@
-import getTemplate from '@codesandbox/common/lib/templates';
-import { generateFileFromSandbox } from '@codesandbox/common/lib/templates/configuration/package-json';
 import { getPreviewTabs } from '@codesandbox/common/lib/templates/devtools';
-import {
-  ParsedConfigurationFiles,
-  ViewConfig,
-} from '@codesandbox/common/lib/templates/template';
+import { ViewConfig } from '@codesandbox/common/lib/templates/template';
 import {
   DevToolsTabPosition,
   DiffTab,
-  Module,
-  ModuleCorrection,
-  ModuleError,
   ModuleTab,
-  Sandbox,
   SandboxFs,
   Tabs,
   WindowOrientation,
@@ -21,17 +12,10 @@ import { getSandboxOptions } from '@codesandbox/common/lib/url';
 import { Derive } from 'app/overmind';
 import immer from 'immer';
 
-import { mainModule as getMainModule } from '../../utils/main-module';
-import { parseConfigurations } from '../../utils/parse-configurations';
+import { CurrentSandbox } from './models/CurrentSandbox';
 
 type State = {
-  currentId: string | null;
-  currentModuleShortid: string | null;
   isForkingSandbox: boolean;
-  mainModuleShortid: string | null;
-  sandboxes: {
-    [id: string]: Sandbox;
-  };
   // TODO: What is this really? Could not find it in Cerebral, but
   // EditorPreview is using it... weird stuff
   devToolTabs: Derive<State, ViewConfig[]>;
@@ -39,11 +23,8 @@ type State = {
   notFound: boolean;
   error: string | null;
   isResizing: boolean;
-  changedModuleShortids: Derive<State, string[]>;
   currentTabId: string | null;
   tabs: Tabs;
-  errors: ModuleError[];
-  corrections: ModuleCorrection[];
   isInProjectView: boolean;
   initialPath: string;
   highlightedLines: number[];
@@ -54,50 +35,24 @@ type State = {
   statusBar: boolean;
   previewWindowOrientation: WindowOrientation;
   canWriteCode: Derive<State, boolean>;
-  isAllModulesSynced: Derive<State, boolean>;
-  currentSandbox: Derive<State, Sandbox | null>;
-  currentModule: Derive<State, Module>;
-  mainModule: Derive<State, Module | null>;
-  currentPackageJSON: Derive<State, Module | null>;
-  currentPackageJSONCode: Derive<State, string | null>;
-  parsedConfigurations: Derive<State, ParsedConfigurationFiles | null>;
+  currentSandbox: CurrentSandbox;
   currentTab: Derive<State, ModuleTab | DiffTab | undefined>;
   modulesByPath: SandboxFs;
   isAdvancedEditor: Derive<State, boolean>;
-  shouldDirectoryBeOpen: Derive<State, (directoryShortid: string) => boolean>;
   currentDevToolsPosition: DevToolsTabPosition;
   sessionFrozen: boolean;
 };
 
 export const state: State = {
-  sandboxes: {},
-  currentId: null,
   isForkingSandbox: false,
-  currentModuleShortid: null,
-  mainModuleShortid: null,
   isLoading: true,
   notFound: false,
   error: null,
   isResizing: false,
   modulesByPath: {},
-  changedModuleShortids: ({ currentSandbox }) => {
-    if (!currentSandbox) {
-      return [];
-    }
-
-    return currentSandbox.modules.reduce((aggr, module) => {
-      if (module.savedCode !== null && module.savedCode !== module.code) {
-        return aggr.concat(module.shortid);
-      }
-
-      return aggr;
-    }, [] as string[]);
-  },
   currentTabId: null,
   tabs: [],
-  errors: [],
   sessionFrozen: true,
-  corrections: [],
   isInProjectView: false,
   initialPath: '/',
   highlightedLines: [],
@@ -122,24 +77,9 @@ export const state: State = {
     tabPosition: 0,
   },
   canWriteCode: ({ currentSandbox }) =>
-    currentSandbox?.authorization === 'write_code',
-  currentSandbox: ({ sandboxes, currentId }) => {
-    if (currentId && sandboxes[currentId]) {
-      return sandboxes[currentId];
-    }
-
-    return null;
-  },
-
-  isAllModulesSynced: ({ changedModuleShortids }) =>
-    !changedModuleShortids.length,
-  currentModule: ({ currentSandbox, currentModuleShortid }) =>
-    (currentSandbox &&
-      currentSandbox.modules.find(
-        module => module.shortid === currentModuleShortid
-      )) ||
-    ({} as Module),
-  currentTab: ({ currentTabId, currentModuleShortid, tabs }) => {
+    currentSandbox.hasPermission('write_code'),
+  currentSandbox: new CurrentSandbox(),
+  currentTab: ({ currentTabId, currentSandbox, tabs }) => {
     if (currentTabId) {
       const foundTab = tabs.find(tab => 'id' in tab && tab.id === currentTabId);
 
@@ -150,7 +90,8 @@ export const state: State = {
 
     return tabs.find(
       tab =>
-        'moduleShortid' in tab && tab.moduleShortid === currentModuleShortid
+        'moduleShortid' in tab &&
+        tab.moduleShortid === currentSandbox.getCurrentModule().shortid
     );
   },
   /**
@@ -158,77 +99,27 @@ export const state: State = {
    * an editor that works with bigger projects that run on a container. The advanced editor
    * only has added features, so it's a subset on top of the existing editor.
    */
-  isAdvancedEditor: ({ currentSandbox }) => {
-    if (!currentSandbox) {
-      return false;
-    }
+  isAdvancedEditor: ({ currentSandbox }) =>
+    currentSandbox.getTemplate().isServer && currentSandbox.isOwned(),
 
-    const { isServer } = getTemplate(currentSandbox.template);
-
-    return isServer && currentSandbox.owned;
-  },
-  parsedConfigurations: ({ currentSandbox }) =>
-    currentSandbox ? parseConfigurations(currentSandbox) : null,
-  mainModule: ({ currentSandbox, parsedConfigurations }) =>
-    currentSandbox ? getMainModule(currentSandbox, parsedConfigurations) : null,
-  currentPackageJSON: ({ currentSandbox }) => {
-    if (!currentSandbox) {
-      return null;
-    }
-
-    const module = currentSandbox.modules.find(
-      m => m.directoryShortid == null && m.title === 'package.json'
-    );
-
-    return module || null;
-  },
-  currentPackageJSONCode: ({ currentSandbox, currentPackageJSON }) => {
-    if (!currentPackageJSON || !currentSandbox) {
-      return null;
-    }
-
-    return currentPackageJSON.code
-      ? currentPackageJSON.code
-      : generateFileFromSandbox(currentSandbox);
-  },
-  shouldDirectoryBeOpen: ({ currentSandbox, currentModule }) => (
-    directoryShortid: string
-  ) => {
-    if (!currentSandbox) {
-      return false;
-    }
-
-    const { modules, directories } = currentSandbox;
-    const currentModuleId = currentModule.id;
-    const currentModuleParents = getModuleParents(
-      modules,
-      directories,
-      currentModuleId
-    );
-    const isParentOfModule = currentModuleParents.includes(directoryShortid);
-
-    return isParentOfModule;
-  },
   devToolTabs: ({
     currentSandbox: sandbox,
-    parsedConfigurations,
     workspaceConfigCode: intermediatePreviewCode,
   }) => {
-    if (!sandbox || !parsedConfigurations) {
+    const parsedConfigurations = sandbox.getParsedConfigurations();
+    if (!parsedConfigurations) {
       return [];
     }
 
     const views = getPreviewTabs(
-      sandbox,
+      sandbox.get(),
       parsedConfigurations,
       intermediatePreviewCode
     );
 
     // Do it in an immutable manner, prevents changing the original object
     return immer(views, draft => {
-      const sandboxConfig = sandbox.modules.find(
-        x => x.directoryShortid == null && x.title === 'sandbox.config.json'
-      );
+      const sandboxConfig = sandbox.getSandboxConfig();
       let view = 'browser';
       if (sandboxConfig) {
         try {
@@ -266,23 +157,3 @@ export const state: State = {
     });
   },
 };
-
-// This should be moved somewhere else
-function getModuleParents(modules, directories, id): string[] {
-  const module = modules.find(moduleEntry => moduleEntry.id === id);
-
-  if (!module) return [];
-
-  let directory = directories.find(
-    directoryEntry => directoryEntry.shortid === module.directoryShortid
-  );
-  let directoryIds: string[] = [];
-  while (directory != null) {
-    directoryIds = [...directoryIds, directory.id];
-    directory = directories.find(
-      directoryEntry => directoryEntry.shortid === directory.directoryShortid // eslint-disable-line
-    );
-  }
-
-  return directoryIds;
-}

@@ -4,7 +4,6 @@ import getTemplateDefinition, {
 import {
   Module,
   ModuleTab,
-  Sandbox,
   ServerContainerStatus,
   TabType,
 } from '@codesandbox/common/lib/types';
@@ -12,6 +11,7 @@ import {
   captureException,
   logBreadcrumb,
 } from '@codesandbox/common/lib/utils/analytics/sentry';
+import { hasPermission } from '@codesandbox/common/lib/utils/permission';
 import slugify from '@codesandbox/common/lib/utils/slugify';
 import {
   editorUrl,
@@ -21,7 +21,8 @@ import { Action, AsyncAction } from 'app/overmind';
 import { sortObjectByKeys } from 'app/overmind/utils/common';
 import { getTemplate as computeTemplate } from 'codesandbox-import-utils/lib/create-sandbox/templates';
 import { mapValues } from 'lodash-es';
-import { hasPermission } from '@codesandbox/common/lib/utils/permission';
+
+import { CurrentSandbox } from './models/CurrentSandbox';
 
 export const ensureSandboxId: Action<string, string> = ({ state }, id) => {
   if (state.editor.sandboxes[id]) {
@@ -37,11 +38,11 @@ export const ensureSandboxId: Action<string, string> = ({ state }, id) => {
   return matchingSandboxId || id;
 };
 
-export const initializeLiveSandbox: AsyncAction<Sandbox> = async (
-  { state, actions },
-  sandbox
-) => {
-  state.live.isTeam = Boolean(sandbox.team);
+export const initializeLiveSandbox: AsyncAction = async ({
+  state,
+  actions,
+}) => {
+  state.live.isTeam = Boolean(state.editor.currentSandbox.getTeam());
 
   if (state.live.isLive && state.live.roomInfo) {
     const roomChanged = state.live.roomInfo.roomId !== sandbox.roomId;

@@ -20,17 +20,13 @@ export const deployWithNetlify: AsyncAction = async ({
 }) => {
   const sandbox = state.editor.currentSandbox;
 
-  if (!sandbox) {
-    return;
-  }
-
   state.deployment.deploying = true;
   state.deployment.netlifyLogs = null;
 
-  const zip = await effects.zip.create(sandbox);
+  const zip = await effects.zip.create(sandbox.get());
 
   try {
-    const id = await effects.netlify.deploy(zip.file, sandbox);
+    const id = await effects.netlify.deploy(zip.file, sandbox.get());
     state.deployment.deploying = false;
 
     await actions.deployment.getNetlifyDeploys();
@@ -55,16 +51,13 @@ export const deployWithNetlify: AsyncAction = async ({
 
 export const getNetlifyDeploys: AsyncAction = async ({ state, effects }) => {
   const sandbox = state.editor.currentSandbox;
-  if (!sandbox) {
-    return;
-  }
 
   try {
     state.deployment.netlifyClaimUrl = await effects.netlify.claimSite(
-      sandbox.id
+      sandbox.getId()
     );
     state.deployment.netlifySite = await effects.netlify.getDeployments(
-      sandbox.id
+      sandbox.getId()
     );
   } catch (error) {
     state.deployment.netlifySite = null;
@@ -72,18 +65,16 @@ export const getNetlifyDeploys: AsyncAction = async ({ state, effects }) => {
 };
 
 export const getDeploys: AsyncAction = async ({ state, actions, effects }) => {
-  if (
-    !state.user ||
-    !state.user.integrations.zeit ||
-    !state.editor.currentSandbox
-  ) {
+  if (!state.user || !state.user.integrations.zeit) {
     return;
   }
 
   state.deployment.gettingDeploys = true;
 
   try {
-    const zeitConfig = effects.zeit.getConfig(state.editor.currentSandbox);
+    const zeitConfig = effects.zeit.getConfig(
+      state.editor.currentSandbox.get()
+    );
 
     state.deployment.hasAlias = !!zeitConfig.alias;
     if (zeitConfig.name) {
@@ -108,15 +99,11 @@ export const deployClicked: AsyncAction = async ({
 }) => {
   const sandbox = state.editor.currentSandbox;
 
-  if (!sandbox) {
-    return;
-  }
-
   try {
     state.deployment.deploying = true;
-    const zip = await effects.zip.create(sandbox);
+    const zip = await effects.zip.create(sandbox.get());
     const contents = await effects.jsZip.loadAsync(zip.file);
-    state.deployment.url = await effects.zeit.deploy(contents, sandbox);
+    state.deployment.url = await effects.zeit.deploy(contents, sandbox.get());
   } catch (error) {
     actions.internal.handleError({
       message: getZeitErrorMessage(error),
@@ -205,11 +192,7 @@ export const aliasDeployment: AsyncAction<string> = async (
   { state, effects, actions },
   id
 ) => {
-  if (!state.editor.currentSandbox) {
-    return;
-  }
-
-  const zeitConfig = effects.zeit.getConfig(state.editor.currentSandbox);
+  const zeitConfig = effects.zeit.getConfig(state.editor.currentSandbox.get());
 
   try {
     const url = await effects.zeit.aliasDeployment(id, zeitConfig);
