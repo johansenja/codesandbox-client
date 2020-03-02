@@ -1,11 +1,10 @@
-import React, { FunctionComponent, useState } from 'react';
-
-import { useOvermind } from 'app/overmind';
-import { ListAction, Text, Element } from '@codesandbox/components';
-import styled, { css } from 'styled-components';
 import getIcon from '@codesandbox/common/lib/templates/icons';
+import { Element, ListAction, Text } from '@codesandbox/components';
 import { ColorIcons as Icons } from '@codesandbox/template-icons';
-import { Popover, usePopoverState, PopoverDisclosure } from 'reakit/Popover';
+import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent, useState } from 'react';
+import { Popover, PopoverDisclosure, usePopoverState } from 'reakit/Popover';
+import styled, { css } from 'styled-components';
 
 const buttonStyles = css`
   padding: 0;
@@ -52,24 +51,22 @@ export const TemplateConfig: FunctionComponent = () => {
       workspace: { editTemplate },
     },
     state: {
-      editor: {
-        currentSandbox: { customTemplate, template },
-      },
+      editor: { sandbox },
     },
   } = useOvermind();
   const iconPopover = usePopoverState({
     placement: 'top',
   });
   const [selectedIcon, setSelectedIcon] = useState(
-    customTemplate.iconUrl || ''
+    sandbox.customTemplate.iconUrl || ''
   );
 
-  const DefaultIcon = getIcon(template);
+  const DefaultIcon = getIcon(sandbox.template);
 
   const setIcon = (key: string) => {
     setSelectedIcon(key);
     iconPopover.hide();
-    editTemplate({ ...customTemplate, iconUrl: key });
+    editTemplate({ ...sandbox.customTemplate, iconUrl: key });
   };
   const TemplateIcon = Icons[selectedIcon];
 

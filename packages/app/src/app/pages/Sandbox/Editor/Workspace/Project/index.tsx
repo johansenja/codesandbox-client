@@ -1,7 +1,6 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
 import { Stats } from 'app/pages/common/Stats';
+import React, { FunctionComponent } from 'react';
 
 // import { Alias } from './Alias';
 import { Author } from './Author';
@@ -25,8 +24,8 @@ export const Project: FunctionComponent<Props> = ({ editable = false }) => {
   const {
     state: {
       editor: {
-        currentSandbox,
-        currentSandbox: {
+        sandbox: currentSandbox,
+        sandbox: {
           author,
           forkedFromSandbox,
           forkedTemplateSandbox,
@@ -51,12 +50,12 @@ export const Project: FunctionComponent<Props> = ({ editable = false }) => {
 
       {!team && author && <Author />}
 
-      {team && <Team/>}
+      {team && <Team />}
 
       {git && <Git />}
 
       <StatsContainer>
-        <Stats sandbox={currentSandbox} />
+        <Stats sandbox={currentSandbox.get()} />
       </StatsContainer>
 
       <Keywords editable={editable} />

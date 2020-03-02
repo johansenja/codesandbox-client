@@ -11,7 +11,7 @@ const Feedback = Loadable(() =>
 export const FeedbackModal: FunctionComponent = () => {
   const {
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       user,
     },
   } = useOvermind();

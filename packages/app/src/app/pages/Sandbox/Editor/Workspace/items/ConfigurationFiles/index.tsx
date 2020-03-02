@@ -1,23 +1,20 @@
-import React from 'react';
+import Tooltip from '@codesandbox/common/lib/components/Tooltip';
+import { resolveModule } from '@codesandbox/common/lib/sandbox/modules';
 import getDefinition from '@codesandbox/common/lib/templates';
 import getUI from '@codesandbox/common/lib/templates/configuration/ui';
-import { Module, Configuration } from '@codesandbox/common/lib/types';
-import { resolveModule } from '@codesandbox/common/lib/sandbox/modules';
-
+import { Configuration, Module } from '@codesandbox/common/lib/types';
 import { useOvermind } from 'app/overmind';
-
-import BookIcon from 'react-icons/lib/md/library-books';
+import React from 'react';
 import UIIcon from 'react-icons/lib/md/dvr';
-
-import Tooltip from '@codesandbox/common/lib/components/Tooltip';
+import BookIcon from 'react-icons/lib/md/library-books';
 
 import { Description, WorkspaceSubtitle } from '../../elements';
 import {
-  FilesContainer,
-  File,
-  FileTitle,
-  FileDescription,
   CreateButton,
+  File,
+  FileDescription,
+  FileTitle,
+  FilesContainer,
 } from './elements';
 
 type FileConfigProps = {
@@ -89,7 +86,7 @@ export const ConfigurationFiles = () => {
     actions: { files, editor },
   } = useOvermind();
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   const { configurationFiles } = getDefinition(sandbox.template);
 
   const createdPaths = {};

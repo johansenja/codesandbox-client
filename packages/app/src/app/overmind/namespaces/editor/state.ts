@@ -12,7 +12,7 @@ import { getSandboxOptions } from '@codesandbox/common/lib/url';
 import { Derive } from 'app/overmind';
 import immer from 'immer';
 
-import { CurrentSandbox } from './models/CurrentSandbox';
+import { EditorSandbox } from './models/EditorSandbox';
 
 type State = {
   isForkingSandbox: boolean;
@@ -35,7 +35,7 @@ type State = {
   statusBar: boolean;
   previewWindowOrientation: WindowOrientation;
   canWriteCode: Derive<State, boolean>;
-  currentSandbox: CurrentSandbox;
+  sandbox: EditorSandbox;
   currentTab: Derive<State, ModuleTab | DiffTab | undefined>;
   modulesByPath: SandboxFs;
   isAdvancedEditor: Derive<State, boolean>;
@@ -76,10 +76,10 @@ export const state: State = {
     devToolIndex: 0,
     tabPosition: 0,
   },
-  canWriteCode: ({ currentSandbox }) =>
+  canWriteCode: ({ sandbox: currentSandbox }) =>
     currentSandbox.hasPermission('write_code'),
-  currentSandbox: new CurrentSandbox(),
-  currentTab: ({ currentTabId, currentSandbox, tabs }) => {
+  sandbox: new EditorSandbox(),
+  currentTab: ({ currentTabId, sandbox: currentSandbox, tabs }) => {
     if (currentTabId) {
       const foundTab = tabs.find(tab => 'id' in tab && tab.id === currentTabId);
 
@@ -91,7 +91,7 @@ export const state: State = {
     return tabs.find(
       tab =>
         'moduleShortid' in tab &&
-        tab.moduleShortid === currentSandbox.getCurrentModule().shortid
+        tab.moduleShortid === currentSandbox.currentModule.shortid
     );
   },
   /**
@@ -99,14 +99,15 @@ export const state: State = {
    * an editor that works with bigger projects that run on a container. The advanced editor
    * only has added features, so it's a subset on top of the existing editor.
    */
-  isAdvancedEditor: ({ currentSandbox }) =>
-    currentSandbox.getTemplate().isServer && currentSandbox.isOwned(),
+  isAdvancedEditor: ({ sandbox: currentSandbox }) =>
+    Boolean(
+      currentSandbox.templateDefinition &&
+        currentSandbox.templateDefinition.isServer &&
+        currentSandbox.owned
+    ),
 
-  devToolTabs: ({
-    currentSandbox: sandbox,
-    workspaceConfigCode: intermediatePreviewCode,
-  }) => {
-    const parsedConfigurations = sandbox.getParsedConfigurations();
+  devToolTabs: ({ sandbox, workspaceConfigCode: intermediatePreviewCode }) => {
+    const parsedConfigurations = sandbox.parsedConfigurations;
     if (!parsedConfigurations) {
       return [];
     }
@@ -119,7 +120,7 @@ export const state: State = {
 
     // Do it in an immutable manner, prevents changing the original object
     return immer(views, draft => {
-      const sandboxConfig = sandbox.getSandboxConfig();
+      const sandboxConfig = sandbox.sandboxConfig;
       let view = 'browser';
       if (sandboxConfig) {
         try {

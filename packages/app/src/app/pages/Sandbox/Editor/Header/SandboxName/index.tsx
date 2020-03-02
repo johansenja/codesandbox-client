@@ -1,23 +1,22 @@
+import { basename } from 'path';
+
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
 import track from '@codesandbox/common/lib/utils/analytics';
 import { getSandboxName } from '@codesandbox/common/lib/utils/get-sandbox-name';
 import { ESC } from '@codesandbox/common/lib/utils/keycodes';
-import { basename } from 'path';
-import { Link } from 'react-router-dom';
+import { Button, Element, Stack, Text } from '@codesandbox/components';
+import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
 import React, {
   ChangeEvent,
   FunctionComponent,
   KeyboardEvent,
   useState,
 } from 'react';
-
-import { Stack, Button, Text, Element } from '@codesandbox/components';
-import css from '@styled-system/css';
-import { useOvermind } from 'app/overmind';
+import { Link } from 'react-router-dom';
 
 import { PrivacyTooltip } from '../PrivacyTooltip';
-
-import { Folder, Form, NameInput, Main, TemplateBadge } from './elements';
+import { Folder, Form, Main, NameInput, TemplateBadge } from './elements';
 
 export const SandboxName: FunctionComponent = () => {
   const {
@@ -26,7 +25,7 @@ export const SandboxName: FunctionComponent = () => {
       workspace: { sandboxInfoUpdated, valueChanged },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       isLoggedIn,
     },
   } = useOvermind();

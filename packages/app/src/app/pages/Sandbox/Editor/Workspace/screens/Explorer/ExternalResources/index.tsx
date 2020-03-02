@@ -1,21 +1,20 @@
-import React, { FunctionComponent } from 'react';
-import { useOvermind } from 'app/overmind';
 import getTemplateDefinition from '@codesandbox/common/lib/templates';
-import CrossIcon from 'react-icons/lib/md/clear';
-
 import {
+  Button,
   Collapsible,
-  Link,
-  Stack,
-  Input,
-  Select,
   FormField,
+  Input,
+  Link,
   List,
   ListAction,
+  Select,
   SidebarRow,
-  Button,
+  Stack,
 } from '@codesandbox/components';
 import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
+import CrossIcon from 'react-icons/lib/md/clear';
 
 import { fonts as listOfFonts } from './google-fonts';
 
@@ -28,7 +27,7 @@ export const ExternalResources: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { externalResources, template },
+        sandbox: { externalResources, template },
       },
     },
   } = useOvermind();

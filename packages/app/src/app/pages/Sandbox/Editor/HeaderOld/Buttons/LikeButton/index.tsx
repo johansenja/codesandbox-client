@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { LikeHeart } from './elements';
 
 export const LikeButton: FunctionComponent = () => {
   const {
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox },
     },
   } = useOvermind();
 
@@ -16,8 +15,8 @@ export const LikeButton: FunctionComponent = () => {
       colorless
       disableTooltip
       highlightHover
-      sandbox={currentSandbox}
-      text={currentSandbox.likeCount}
+      sandbox={sandbox.get()}
+      text={sandbox.likeCount}
     />
   );
 };

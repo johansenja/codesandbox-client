@@ -1,4 +1,3 @@
-import * as CSSProps from 'styled-components/cssprop'; // eslint-disable-line
 import {
   getChildren as calculateChildren,
   inDirectory,
@@ -8,6 +7,7 @@ import { useOvermind } from 'app/overmind';
 import React from 'react';
 import { DropTarget, DropTargetMonitor } from 'react-dnd';
 import { NativeTypes } from 'react-dnd-html5-backend';
+import * as CSSProps from 'styled-components/cssprop'; // eslint-disable-line
 
 import DirectoryChildren from './DirectoryChildren';
 import DirectoryEntryModal from './DirectoryEntryModal';
@@ -94,8 +94,7 @@ const DirectoryEntry: React.FunctionComponent<Props> = ({
     state: {
       isLoggedIn,
       editor: {
-        currentSandbox: { modules, directories, privacy },
-        shouldDirectoryBeOpen,
+        sandbox: { modules, directories, privacy, shouldDirectoryBeOpen },
       },
     },
     actions: {
@@ -131,7 +130,7 @@ const DirectoryEntry: React.FunctionComponent<Props> = ({
   React.useEffect(
     () =>
       reaction(
-        ({ editor }) => editor.currentModuleShortid,
+        ({ editor }) => editor.sandbox.currentModule,
         () => {
           setOpen(isOpen => isOpen || shouldDirectoryBeOpen(id));
         }

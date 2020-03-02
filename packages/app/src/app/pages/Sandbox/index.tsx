@@ -2,7 +2,6 @@ import { Button } from '@codesandbox/common/lib/components/Button';
 import Centered from '@codesandbox/common/lib/components/flex/Centered';
 import Fullscreen from '@codesandbox/common/lib/components/flex/Fullscreen';
 import Padding from '@codesandbox/common/lib/components/spacing/Padding';
-import { getSandboxName } from '@codesandbox/common/lib/utils/get-sandbox-name';
 import { Skeleton } from 'app/components/Skeleton';
 import { Title } from 'app/components/Title';
 import { useOvermind } from 'app/overmind';
@@ -135,7 +134,7 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
       return <NotFound />;
     }
 
-    if (state.editor.isLoading || !state.editor.currentSandbox) {
+    if (state.editor.isLoading || !state.editor.sandbox) {
       return (
         <>
           <Skeleton
@@ -186,12 +185,12 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
     );
   }
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   return (
     <>
       <Helmet>
-        <title>{getSandboxName(sandbox)} - CodeSandbox</title>
+        <title>{sandbox.name} - CodeSandbox</title>
       </Helmet>
       <Editor />
       <QuickActions />

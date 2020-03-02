@@ -1,6 +1,5 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import {
   Description,
@@ -8,9 +7,7 @@ import {
   WorkspaceInputContainer,
   WorkspaceSubtitle,
 } from '../../elements';
-
 import { More } from '../More';
-
 import LiveButton from './LiveButton';
 import LiveInfo from './LiveInfo';
 
@@ -30,8 +27,7 @@ export const Live: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { id, owned },
-        isAllModulesSynced,
+        sandbox: { id, owned, isAllModulesSynced },
       },
       live: {
         followingUserId,

@@ -1,6 +1,5 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { Button, ShareIcon } from './elements';
 
@@ -9,7 +8,7 @@ export const ShareButton: FunctionComponent = () => {
     actions: { modalOpened },
     state: {
       editor: {
-        currentSandbox: { owned },
+        sandbox: { owned },
       },
     },
   } = useOvermind();

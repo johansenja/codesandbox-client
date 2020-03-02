@@ -1,7 +1,7 @@
-import React, { MouseEvent } from 'react';
 import getTemplateDefinition from '@codesandbox/common/lib/templates';
-import { useOvermind } from 'app/overmind';
 import { Button, Element } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
+import React, { MouseEvent } from 'react';
 
 export const Config = () => {
   const {
@@ -12,7 +12,7 @@ export const Config = () => {
     state: {
       user,
       editor: {
-        currentSandbox: { customTemplate, template },
+        sandbox: { customTemplate, template },
       },
       workspace: {
         project: { description, title },

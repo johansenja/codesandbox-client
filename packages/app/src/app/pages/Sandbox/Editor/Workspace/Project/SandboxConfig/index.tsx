@@ -1,11 +1,9 @@
 import getTemplateDefinition from '@codesandbox/common/lib/templates';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, MouseEvent } from 'react';
 import TrashIcon from 'react-icons/lib/fa/trash';
 
-import { useOvermind } from 'app/overmind';
-
 import { Group } from '../elements';
-
 import { Action, CenteredText, Container } from './elements';
 import { TemplateConfig } from './TemplateConfig';
 
@@ -18,7 +16,7 @@ export const SandboxConfig: FunctionComponent = () => {
     state: {
       user,
       editor: {
-        currentSandbox: { customTemplate, template },
+        sandbox: { customTemplate, template },
       },
       workspace: {
         project: { description, title },

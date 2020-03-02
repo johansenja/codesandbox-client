@@ -15,7 +15,7 @@ export const Files: React.FC<IFilesProps> = ({ setEditActions }) => {
     actions: { editor, files },
   } = useOvermind();
 
-  const { currentSandbox: sandbox } = editorState;
+  const { sandbox } = editorState;
 
   const _getModulePath = moduleId => {
     try {

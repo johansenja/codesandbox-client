@@ -37,11 +37,13 @@ const ModuleEntry: React.FC<IModuleEntryProps> = ({
 }) => {
   const {
     state: {
-      editor: { mainModule, currentModuleShortid },
+      editor: {
+        sandbox: { mainModule, currentModule },
+      },
       live,
     },
   } = useOvermind();
-  const isActive = module.shortid === currentModuleShortid;
+  const isActive = module.shortid === currentModule.shortid;
   const isMainModule = module.id === mainModule.id;
   const type = getType(module.title);
   const hasError = module.errors.length > 0;

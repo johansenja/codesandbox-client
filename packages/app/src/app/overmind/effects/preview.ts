@@ -15,8 +15,8 @@ export default {
 
     const dispose = _reaction(
       state => [
-        state.editor.isAllModulesSynced,
-        state.editor.currentSandbox?.template,
+        state.editor.sandbox.isAllModulesSynced,
+        state.editor.sandbox?.template,
         state.preferences.settings.livePreviewEnabled,
       ],
       ([isAllModulesSynced, template, livePreviewEnabled]) => {

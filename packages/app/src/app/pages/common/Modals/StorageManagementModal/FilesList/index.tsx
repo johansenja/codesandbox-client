@@ -1,9 +1,8 @@
 import { Button } from '@codesandbox/common/lib/components/Button';
+import { useOvermind } from 'app/overmind';
 import filesize from 'filesize';
 import { sortBy } from 'lodash-es';
 import React, { FunctionComponent, useState } from 'react';
-
-import { useOvermind } from 'app/overmind';
 
 import { AddFileToSandboxButton } from './AddFileToSandboxButton';
 import { DeleteFileButton } from './DeleteFileButton';
@@ -24,7 +23,7 @@ export const FilesList: FunctionComponent = () => {
       files: { deletedUploadedFile, addedFileToSandbox },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       uploadedFiles,
     },
   } = useOvermind();

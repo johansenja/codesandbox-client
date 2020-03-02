@@ -224,7 +224,7 @@ export const refetchSandboxInfo: AsyncAction = async ({
   effects,
   state,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   if (!sandbox?.id) {
     return;
@@ -232,14 +232,14 @@ export const refetchSandboxInfo: AsyncAction = async ({
 
   const updatedSandbox = await effects.api.getSandbox(sandbox.id);
 
-  sandbox.collection = updatedSandbox.collection;
-  sandbox.owned = updatedSandbox.owned;
-  sandbox.userLiked = updatedSandbox.userLiked;
-  sandbox.title = updatedSandbox.title;
-  sandbox.team = updatedSandbox.team;
-  sandbox.roomId = updatedSandbox.roomId;
+  sandbox.setCollection(updatedSandbox.collection);
+  sandbox.setOwned(updatedSandbox.owned);
+  sandbox.setLiked(updatedSandbox.userLiked);
+  sandbox.setTitle(updatedSandbox.title);
+  sandbox.setTeam(updatedSandbox.team);
+  sandbox.setRoomId(updatedSandbox.roomId);
 
-  await actions.editor.internal.initializeLiveSandbox(sandbox);
+  await actions.editor.internal.initializeLiveSandbox();
 };
 
 export const acceptTeamInvitation: Action<{ teamName: string }> = (

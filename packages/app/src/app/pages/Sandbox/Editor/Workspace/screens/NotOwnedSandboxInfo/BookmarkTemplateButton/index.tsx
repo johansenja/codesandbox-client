@@ -1,19 +1,20 @@
-import React, { useEffect } from 'react';
 import {
+  MutationHookOptions,
   useLazyQuery,
   useMutation,
-  MutationHookOptions,
 } from '@apollo/react-hooks';
-import { useOvermind } from 'app/overmind';
+import { Button } from '@codesandbox/components';
 import {
-  BookmarkedSandboxInfoQuery,
   BookmarkTemplateMutation,
   BookmarkTemplateMutationVariables,
+  BookmarkedSandboxInfoQuery,
+  BookmarkedSandboxInfoQueryVariables,
   UnbookmarkTemplateMutation,
   UnbookmarkTemplateMutationVariables,
-  BookmarkedSandboxInfoQueryVariables,
 } from 'app/graphql/types';
-import { Button } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
+import React, { useEffect } from 'react';
+
 import { BOOKMARK_TEMPLATE, UNBOOKMARK_TEMPLATE } from './mutations';
 import { BOOKMARKED_SANDBOX_INFO } from './queries';
 
@@ -21,10 +22,7 @@ export const BookmarkTemplateButton = () => {
   const {
     state: {
       isLoggedIn,
-      editor: {
-        currentId: sandboxId,
-        currentSandbox: { customTemplate },
-      },
+      editor: { sandbox },
     },
   } = useOvermind();
   const [runQuery, { loading, data }] = useLazyQuery<
@@ -35,10 +33,10 @@ export const BookmarkTemplateButton = () => {
   useEffect(() => {
     if (isLoggedIn) {
       runQuery({
-        variables: { sandboxId },
+        variables: { sandboxId: sandbox.id },
       });
     }
-  }, [isLoggedIn, runQuery, sandboxId]);
+  }, [isLoggedIn, runQuery, sandbox.id]);
 
   const bookmarkInfos = data?.sandbox?.customTemplate?.bookmarked || [];
 
@@ -56,14 +54,14 @@ export const BookmarkTemplateButton = () => {
 
     return {
       variables: {
-        template: customTemplate.id,
+        template: sandbox.customTemplate.id,
         team: undefined,
       },
       optimisticResponse: {
         __typename: 'RootMutationType',
         template: {
           __typename: 'Template',
-          id: customTemplate.id,
+          id: sandbox.customTemplate.id,
           bookmarked: bookmarkInfos.map(b => {
             if (b.entity.id !== bookmarkInfo.entity.id) {
               return b;

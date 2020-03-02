@@ -19,8 +19,7 @@ export const Dependencies: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { externalResources, template },
-        parsedConfigurations,
+        sandbox: { externalResources, template, parsedConfigurations },
       },
     },
   } = useOvermind();

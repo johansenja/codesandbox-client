@@ -21,7 +21,7 @@ export const VSCode: React.FunctionComponent = () => {
     const rootEl = containerEl.current;
     const mainContainer = effects.vscode.getEditorElement(
       (modulePath: string) => {
-        const template = getTemplate(state.editor.currentSandbox.template);
+        const template = getTemplate(state.editor.sandbox.template);
         const config = template.configurationFiles[modulePath];
 
         const ui = config && getUI(config.type);
@@ -36,9 +36,9 @@ export const VSCode: React.FunctionComponent = () => {
                     actions.editor.codeChanged({ code, moduleShortid })
                   }
                   // Copy the object, we don't want mutations in the component
-                  currentModule={json(state.editor.currentModule)}
+                  currentModule={json(state.editor.sandbox.currentModule)}
                   config={config}
-                  sandbox={state.editor.currentSandbox}
+                  sandbox={state.editor.sandbox}
                   {...(extraProps as any)}
                 />
               </ThemeProvider>,
@@ -60,9 +60,10 @@ export const VSCode: React.FunctionComponent = () => {
   }, [
     actions.editor,
     effects.vscode,
-    state.editor.currentModule,
-    state.editor.currentSandbox,
-    state.editor.currentSandbox.template,
+    state.editor.sandbox.currentModule,
+    state.editor.sandbox,
+    state.editor.sandbox.template,
+    state.editor.sandbox.currentModule,
   ]);
 
   return (

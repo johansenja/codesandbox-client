@@ -20,7 +20,7 @@ export const tagChanged: Action<string> = ({ state }, tagName) => {
 export const tagAdded: AsyncAction = withOwnedSandbox(
   async ({ state, effects, actions }) => {
     const { tagName } = state.workspace.tags;
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
 
     if (!sandbox) {
       return;
@@ -31,7 +31,7 @@ export const tagAdded: AsyncAction = withOwnedSandbox(
     sandbox.tags.push(cleanTag);
 
     try {
-      sandbox.tags = await effects.api.createTag(sandbox.id, cleanTag);
+      sandbox.setTags(await effects.api.createTag(sandbox.id, cleanTag));
 
       await actions.editor.internal.updateSandboxPackageJson();
     } catch (error) {
@@ -44,7 +44,7 @@ export const tagAdded: AsyncAction = withOwnedSandbox(
 
 export const tagRemoved: AsyncAction<string> = withOwnedSandbox(
   async ({ state, effects, actions }, tag) => {
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
 
     if (!sandbox) {
       return;
@@ -55,19 +55,16 @@ export const tagRemoved: AsyncAction<string> = withOwnedSandbox(
     sandbox.tags.splice(tagIndex, 1);
 
     try {
-      sandbox.tags = await effects.api.deleteTag(sandbox.id, tag);
+      sandbox.setTags(await effects.api.deleteTag(sandbox.id, tag));
 
-      if (
-        !state.editor.parsedConfigurations ||
-        !state.editor.currentPackageJSON
-      ) {
+      if (!sandbox.parsedConfigurations || !sandbox.packageJson) {
         return;
       }
       // Create a "joint action" on this
-      if (!state.editor.parsedConfigurations.package) {
+      if (!sandbox.parsedConfigurations.package) {
         return;
       }
-      const { parsed } = state.editor.parsedConfigurations.package;
+      const { parsed } = sandbox.parsedConfigurations.package;
 
       if (!parsed) {
         return;
@@ -78,13 +75,15 @@ export const tagRemoved: AsyncAction<string> = withOwnedSandbox(
       parsed.description = sandbox.description;
 
       const code = JSON.stringify(parsed, null, 2);
-      const moduleShortid = state.editor.currentPackageJSON.shortid;
+      const moduleShortid = state.editor.sandbox.packageJson?.shortid;
 
-      await actions.editor.codeSaved({
-        code,
-        moduleShortid,
-        cbID: null,
-      });
+      if (moduleShortid) {
+        await actions.editor.codeSaved({
+          code,
+          moduleShortid,
+          cbID: null,
+        });
+      }
     } catch (error) {
       sandbox.tags.splice(tagIndex, 0, tag);
       actions.internal.handleError({ message: 'Unable to remove tag', error });
@@ -96,11 +95,11 @@ export const tagsChanged: AsyncAction<{
   newTags: string[];
   removedTags: string[];
 }> = async ({ actions, effects, state }, { newTags, removedTags }) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
-  const { tags } = state.editor.currentSandbox;
+  const { tags } = state.editor.sandbox;
   if (tags.length > 5) {
     effects.notificationToast.error('You can have a maximum of 5 tags');
     return;
@@ -121,7 +120,7 @@ export const tagsChanged: AsyncAction<{
  */
 export const tagsChanged2: AsyncAction<string[]> = withOwnedSandbox(
   async ({ state, effects, actions }, newTags) => {
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
     if (!sandbox) return;
 
     const { tags: oldTags } = sandbox;
@@ -143,7 +142,7 @@ export const tagsChanged2: AsyncAction<string[]> = withOwnedSandbox(
 
 export const sandboxInfoUpdated: AsyncAction = withOwnedSandbox(
   async ({ state, effects, actions }) => {
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
     if (!sandbox) {
       return;
     }
@@ -168,9 +167,9 @@ export const sandboxInfoUpdated: AsyncAction = withOwnedSandbox(
 
         effects.analytics.track(`Sandbox - Update ${event}`);
 
-        sandbox.title = project.title;
-        sandbox.description = project.description;
-        sandbox.alias = project.alias;
+        sandbox.setTitle(project.title);
+        sandbox.setDescription(project.description);
+        sandbox.setAlias(project.alias);
 
         const updatedSandbox = await effects.api.updateSandbox(sandbox.id, {
           title: project.title,
@@ -199,22 +198,19 @@ export const sandboxInfoUpdated: AsyncAction = withOwnedSandbox(
 
 export const externalResourceAdded: AsyncAction<string> = withOwnedSandbox(
   async ({ effects, state, actions }, resource) => {
-    if (!state.editor.currentSandbox) {
+    if (!state.editor.sandbox) {
       return;
     }
-    const { externalResources } = state.editor.currentSandbox;
+    const { externalResources } = state.editor.sandbox;
 
     externalResources.push(resource);
     actions.editor.internal.updatePreviewCode();
 
     try {
-      await effects.api.createResource(
-        state.editor.currentSandbox.id,
-        resource
-      );
+      await effects.api.createResource(state.editor.sandbox.id, resource);
       if (state.live.isLive) {
         effects.live.sendExternalResourcesChanged(
-          state.editor.currentSandbox.externalResources
+          state.editor.sandbox.externalResources
         );
       }
     } catch (error) {
@@ -230,24 +226,21 @@ export const externalResourceAdded: AsyncAction<string> = withOwnedSandbox(
 
 export const externalResourceRemoved: AsyncAction<string> = withOwnedSandbox(
   async ({ effects, state, actions }, resource) => {
-    if (!state.editor.currentSandbox) {
+    if (!state.editor.sandbox) {
       return;
     }
 
-    const { externalResources } = state.editor.currentSandbox;
+    const { externalResources } = state.editor.sandbox;
     const resourceIndex = externalResources.indexOf(resource);
 
     externalResources.splice(resourceIndex, 1);
     actions.editor.internal.updatePreviewCode();
 
     try {
-      await effects.api.deleteResource(
-        state.editor.currentSandbox.id,
-        resource
-      );
+      await effects.api.deleteResource(state.editor.sandbox.id, resource);
       if (state.live.isLive) {
         effects.live.sendExternalResourcesChanged(
-          state.editor.currentSandbox.externalResources
+          state.editor.sandbox.externalResources
         );
       }
     } catch (error) {
@@ -275,11 +268,11 @@ export const sandboxDeleted: AsyncAction = async ({
 }) => {
   actions.modalClosed();
 
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
-  await effects.api.deleteSandbox(state.editor.currentSandbox.id);
+  await effects.api.deleteSandbox(state.editor.sandbox.id);
 
   // Not sure if this is in use?
   state.workspace.showDeleteSandboxModal = false;
@@ -292,7 +285,7 @@ export const sandboxPrivacyChanged: AsyncAction<{
   privacy: 0 | 1 | 2;
   source?: string;
 }> = async ({ actions, effects, state }, { privacy, source = 'generic' }) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
@@ -301,19 +294,19 @@ export const sandboxPrivacyChanged: AsyncAction<{
     source,
   });
 
-  const oldPrivacy = state.editor.currentSandbox.privacy;
-  state.editor.currentSandbox.privacy = privacy;
+  const oldPrivacy = state.editor.sandbox.privacy;
+  state.editor.sandbox.setPrivacy(privacy);
 
   try {
     const sandbox = await effects.api.updatePrivacy(
-      state.editor.currentSandbox.id,
+      state.editor.sandbox.id,
       privacy
     );
-    state.editor.currentSandbox.previewSecret = sandbox.previewSecret;
-    state.editor.currentSandbox.privacy = privacy;
+    state.editor.sandbox.setPreviewSecret(sandbox.previewSecret);
+    state.editor.sandbox.setPrivacy(privacy);
 
     if (
-      getTemplate(state.editor.currentSandbox.template).isServer &&
+      getTemplate(state.editor.sandbox.template).isServer &&
       ((oldPrivacy !== 2 && privacy === 2) ||
         (oldPrivacy === 2 && privacy !== 2))
     ) {
@@ -322,7 +315,7 @@ export const sandboxPrivacyChanged: AsyncAction<{
       actions.server.restartContainer();
     }
   } catch (error) {
-    state.editor.currentSandbox.privacy = oldPrivacy;
+    state.editor.sandbox.setPrivacy(oldPrivacy);
     actions.internal.handleError({
       message: "We weren't able to update the sandbox privacy",
       error,
@@ -354,21 +347,17 @@ export const deleteTemplate: AsyncAction = async ({
   effects,
 }) => {
   effects.analytics.track('Template - Removed', { source: 'editor' });
-  if (
-    !state.editor.currentSandbox ||
-    !state.editor.currentSandbox.customTemplate
-  ) {
+  if (!state.editor.sandbox || !state.editor.sandbox.customTemplate) {
     return;
   }
-  const sandboxId = state.editor.currentSandbox.id;
-  const templateId = state.editor.currentSandbox.customTemplate.id;
+  const sandbox = state.editor.sandbox;
+  const templateId = state.editor.sandbox.customTemplate.id;
 
   try {
-    await effects.api.deleteTemplate(sandboxId, templateId);
-    const sandbox = state.editor.sandboxes[sandboxId];
+    await effects.api.deleteTemplate(sandbox.id, templateId);
 
-    sandbox.isFrozen = false;
-    sandbox.customTemplate = null;
+    sandbox.setFrozen(false);
+    sandbox.setCustomTemplate(null);
     actions.modalClosed();
     effects.notificationToast.success('Template Deleted');
   } catch (error) {
@@ -383,13 +372,13 @@ export const editTemplate: AsyncAction<CustomTemplate> = async (
   { state, actions, effects },
   template
 ) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
   effects.analytics.track('Template - Edited', { source: 'editor' });
 
-  const sandboxId = state.editor.currentSandbox.id;
+  const sandboxId = state.editor.sandbox.id;
 
   try {
     const updatedTemplate = await effects.api.updateTemplate(
@@ -398,7 +387,7 @@ export const editTemplate: AsyncAction<CustomTemplate> = async (
     );
 
     actions.modalClosed();
-    state.editor.currentSandbox.customTemplate = updatedTemplate;
+    state.editor.sandbox.setCustomTemplate(updatedTemplate);
     effects.notificationToast.success('Template Edited');
   } catch (error) {
     actions.internal.handleError({
@@ -413,19 +402,19 @@ export const addedTemplate: AsyncAction<{
   description: string;
   title: string;
 }> = async ({ state, actions, effects }, template) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
   effects.analytics.track('Template - Created', { source: 'editor' });
 
-  const sandboxId = state.editor.currentSandbox.id;
+  const sandboxId = state.editor.sandbox.id;
 
   try {
     const newTemplate = await effects.api.createTemplate(sandboxId, template);
-    const sandbox = state.editor.currentSandbox;
-    sandbox.isFrozen = true;
-    sandbox.customTemplate = newTemplate;
+    const sandbox = state.editor.sandbox;
+    sandbox.setFrozen(true);
+    sandbox.setCustomTemplate(newTemplate);
     actions.modalClosed();
     effects.notificationToast.success('Successfully created the template');
   } catch (error) {

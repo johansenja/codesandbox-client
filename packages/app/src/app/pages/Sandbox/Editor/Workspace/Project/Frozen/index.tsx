@@ -1,11 +1,9 @@
 import Switch from '@codesandbox/common/lib/components/Switch';
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Item, PropertyName, PropertyValue, QuestionIcon } from '../elements';
-
 import { FreezeContainer, FrozenWarning } from './elements';
 
 export const Frozen: FunctionComponent = () => {
@@ -15,7 +13,7 @@ export const Frozen: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { isFrozen, customTemplate },
+        sandbox: { isFrozen, customTemplate },
         sessionFrozen,
       },
     },

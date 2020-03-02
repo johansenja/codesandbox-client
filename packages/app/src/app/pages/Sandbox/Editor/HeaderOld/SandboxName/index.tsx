@@ -1,29 +1,28 @@
+import { basename } from 'path';
+
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
 import track from '@codesandbox/common/lib/utils/analytics';
 import { getSandboxName } from '@codesandbox/common/lib/utils/get-sandbox-name';
 import { ESC } from '@codesandbox/common/lib/utils/keycodes';
-import { basename } from 'path';
-import { Link } from 'react-router-dom';
+import { useOvermind } from 'app/overmind';
 import React, {
   ChangeEvent,
   FunctionComponent,
   KeyboardEvent,
   useState,
 } from 'react';
-import { useSpring, animated } from 'react-spring';
-
-import { useOvermind } from 'app/overmind';
+import { Link } from 'react-router-dom';
+import { animated, useSpring } from 'react-spring';
 
 import { PrivacyTooltip } from '../PrivacyTooltip';
-
 import {
   Container,
   Folder,
   FolderName,
   Form,
+  Main,
   Name,
   NameInput,
-  Main,
   TemplateBadge,
 } from './elements';
 
@@ -35,14 +34,14 @@ export const SandboxName: FunctionComponent = () => {
       workspace: { sandboxInfoUpdated, valueChanged },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox },
       isLoggedIn,
     },
   } = useOvermind();
   const [updatingName, setUpdatingName] = useState(false);
   const [name, setName] = useState('');
 
-  const sandboxName = getSandboxName(currentSandbox) || 'Untitled';
+  const sandboxName = getSandboxName(sandbox.get()) || 'Untitled';
 
   const updateSandboxInfo = () => {
     sandboxInfoUpdated();
@@ -85,16 +84,17 @@ export const SandboxName: FunctionComponent = () => {
 
   const value = name !== 'Untitled' && updatingName ? name : '';
 
-  const folderName = currentSandbox.collection
-    ? basename(currentSandbox.collection.path) ||
-      (currentSandbox.team ? currentSandbox.team.name : 'My Sandboxes')
+  const folderName = sandbox.collection
+    ? basename(sandbox.collection.path) ||
+      (sandbox.team ? sandbox.team.name : 'My Sandboxes')
     : 'My Sandboxes';
 
   const spring = useSpring({
     opacity: updatingName ? 0 : 1,
     pointerEvents: updatingName ? 'none' : 'initial',
   });
-  const { customTemplate, owned } = currentSandbox;
+  const owned = sandbox.owned;
+  const customTemplate = sandbox.customTemplate;
 
   return (
     <Main>
@@ -149,7 +149,7 @@ export const SandboxName: FunctionComponent = () => {
 
         {!updatingName ? <PrivacyTooltip /> : null}
 
-        {currentSandbox.customTemplate ? (
+        {sandbox.customTemplate ? (
           <Tooltip
             content={
               <>

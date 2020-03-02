@@ -1,10 +1,8 @@
-import React, { ChangeEvent, FunctionComponent } from 'react';
-
 import { PrivacyStatus } from 'app/components/PrivacyStatus';
 import { useOvermind } from 'app/overmind';
+import React, { ChangeEvent, FunctionComponent } from 'react';
 
 import { Item, PropertyName, PropertyValue } from '../elements';
-
 import { PrivacyContainer, PrivacySelect } from './elements';
 
 type Props = {
@@ -17,7 +15,7 @@ export const Privacy: FunctionComponent<Props> = ({ editable }) => {
     },
     state: {
       editor: {
-        currentSandbox: { privacy },
+        sandbox: { privacy },
       },
       isPatron,
     },

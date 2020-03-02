@@ -1,14 +1,14 @@
 import track from '@codesandbox/common/lib/utils/analytics';
-import React, { ChangeEvent } from 'react';
 import {
-  Collapsible,
-  Input,
-  Element,
-  Stack,
   Button,
+  Collapsible,
+  Element,
+  Input,
+  Stack,
   Text,
 } from '@codesandbox/components';
 import { useOvermind } from 'app/overmind';
+import React, { ChangeEvent } from 'react';
 
 export const CreateRepo = () => {
   const {
@@ -17,8 +17,7 @@ export const CreateRepo = () => {
     },
     state: {
       editor: {
-        isAllModulesSynced,
-        currentSandbox: { originalGit },
+        sandbox: { originalGit, isAllModulesSynced },
       },
       git: { error, repoTitle },
     },

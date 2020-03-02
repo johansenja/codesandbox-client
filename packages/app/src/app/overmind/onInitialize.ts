@@ -22,7 +22,7 @@ export const onInitialize: OnInitialize = async (
   effects.api.initialize({
     provideJwtToken,
     getParsedConfigurations() {
-      return state.editor.parsedConfigurations;
+      return state.editor.sandbox.parsedConfigurations;
     },
   });
 
@@ -46,11 +46,11 @@ export const onInitialize: OnInitialize = async (
 
   effects.prettyfier.initialize({
     getCurrentModule() {
-      return state.editor.currentModule;
+      return state.editor.sandbox.currentModule;
     },
     getPrettierConfig() {
       let config = state.preferences.settings.prettierConfig;
-      const configFromSandbox = state.editor.currentSandbox?.modules.find(
+      const configFromSandbox = state.editor.sandbox?.modules.find(
         module =>
           module.directoryShortid == null && module.title === '.prettierrc'
       );
@@ -64,8 +64,8 @@ export const onInitialize: OnInitialize = async (
   });
 
   effects.vscode.initialize({
-    getCurrentSandbox: () => state.editor.currentSandbox,
-    getCurrentModule: () => state.editor.currentModule,
+    getCurrentSandbox: () => state.editor.sandbox.get(),
+    getCurrentModule: () => state.editor.sandbox.currentModule,
     getSandboxFs: () => state.editor.modulesByPath,
     getCurrentUser: () => state.user,
     onOperationApplied: actions.editor.onOperationApplied,

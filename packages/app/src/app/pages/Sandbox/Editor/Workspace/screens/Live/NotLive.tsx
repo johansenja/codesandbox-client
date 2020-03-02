@@ -1,14 +1,13 @@
-import React from 'react';
-import css from '@styled-system/css';
-
 import {
-  Element,
+  Button,
   Collapsible,
+  Element,
   Stack,
   Text,
-  Button,
 } from '@codesandbox/components';
+import css from '@styled-system/css';
 import { useOvermind } from 'app/overmind';
+import React from 'react';
 
 import { LiveIcon } from './icons';
 
@@ -16,7 +15,7 @@ export const NotLive = () => {
   const {
     state: {
       editor: {
-        currentSandbox: { owned },
+        sandbox: { owned },
       },
     },
   } = useOvermind();
@@ -40,8 +39,7 @@ const Owner = () => {
     },
     state: {
       editor: {
-        currentSandbox: { id },
-        isAllModulesSynced,
+        sandbox: { id, isAllModulesSynced },
       },
       live: { isLoading },
     },

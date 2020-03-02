@@ -1,18 +1,16 @@
 import { UserWithAvatar } from '@codesandbox/common/lib/components/UserWithAvatar';
 import { profileUrl } from '@codesandbox/common/lib/utils/url-generator';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Item } from '../elements';
-
 import { UserLink } from './elements';
 
 export const Author: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: {
+        sandbox: {
           author: { username, avatarUrl, subscriptionSince },
         },
       },

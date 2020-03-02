@@ -65,8 +65,8 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
   id: string;
 }>(async ({ state, actions, effects }, { id }) => {
   // This happens when we fork. This can be avoided with state first routing
-  if (state.editor.isForkingSandbox && state.editor.currentSandbox) {
-    effects.vscode.openModule(state.editor.currentSandbox.getCurrentModule());
+  if (state.editor.isForkingSandbox && state.editor.sandbox) {
+    effects.vscode.openModule(state.editor.sandbox.currentModule);
 
     await actions.editor.internal.initializeLiveSandbox();
 
@@ -78,13 +78,9 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
 
   state.editor.error = null;
 
-  let newId = id;
+  effects.browser.storage.set('currentSandboxId', id);
 
-  newId = actions.editor.internal.ensureSandboxId(newId);
-
-  effects.browser.storage.set('currentSandboxId', newId);
-
-  const hasExistingSandbox = Boolean(state.editor.currentSandbox.getId());
+  const hasExistingSandbox = Boolean(state.editor.sandbox.id);
 
   if (state.live.isLive) {
     actions.live.internal.disconnect();
@@ -94,7 +90,7 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
   state.editor.notFound = false;
 
   try {
-    const sandbox = await effects.api.getSandbox(newId);
+    const sandbox = await effects.api.getSandbox(id);
 
     actions.internal.setCurrentSandbox(sandbox);
     actions.workspace.openDefaultItem();
@@ -109,13 +105,13 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
     return;
   }
 
-  const sandbox = state.editor.currentSandbox!;
+  const sandbox = state.editor.sandbox!;
 
   await effects.vscode.changeSandbox(sandbox.get(), fs => {
     state.editor.modulesByPath = fs;
   });
 
-  if (sandbox.hasFeature('containerLsp') && !sandbox.isOwned()) {
+  if (sandbox.hasFeature('containerLsp') && !sandbox.owned) {
     effects.vscode.setReadOnly(true);
     effects.notificationToast.add({
       message:
@@ -146,7 +142,7 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
     await effects.live.sendModuleStateSyncRequest();
   }
 
-  effects.vscode.openModule(sandbox.getCurrentModule());
+  effects.vscode.openModule(sandbox.currentModule);
   effects.preview.executeCodeImmediately({ initialRender: true });
 
   state.editor.isLoading = false;
@@ -155,7 +151,7 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
 export const contentMounted: Action = ({ state, effects }) => {
   effects.browser.onUnload(event => {
     if (
-      !state.editor.currentSandbox.isAllModulesSynced() &&
+      !state.editor.sandbox.isAllModulesSynced &&
       !state.editor.isForkingSandbox
     ) {
       const returnMessage =
@@ -202,11 +198,11 @@ export const onOperationApplied: Action<{
   moduleShortid: string;
   code: string;
 }> = ({ state, effects, actions }, { code, moduleShortid }) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
-  const module = state.editor.currentSandbox.getModule(moduleShortid);
+  const module = state.editor.sandbox.getModule(moduleShortid);
 
   if (!module) {
     return;
@@ -231,11 +227,11 @@ export const codeChanged: Action<{
 }> = ({ effects, state, actions }, { code, event, moduleShortid }) => {
   effects.analytics.trackOnce('Change Code');
 
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
-  const module = state.editor.currentSandbox.getModule(moduleShortid);
+  const module = state.editor.sandbox.getModule(moduleShortid);
 
   if (!module) {
     return;
@@ -255,7 +251,7 @@ export const codeChanged: Action<{
   });
 
   if (
-    !state.editor.currentSandbox.getTemplate().isServer &&
+    !state.editor.sandbox.templateDefinition.isServer &&
     state.preferences.settings.livePreviewEnabled
   ) {
     actions.editor.internal.updatePreviewCode();
@@ -268,17 +264,17 @@ export const codeChanged: Action<{
 
 export const saveClicked: AsyncAction = withOwnedSandbox(
   async ({ state, effects, actions }) => {
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
 
     if (!sandbox) {
       return;
     }
 
     try {
-      const changedModules = sandbox.getChangedModules();
+      const changedModules = sandbox.changedModules;
 
       const updatedModules = await effects.api.saveModules(
-        sandbox.getId(),
+        sandbox.id,
         changedModules
       );
 
@@ -296,7 +292,7 @@ export const saveClicked: AsyncAction = withOwnedSandbox(
             state.editor.modulesByPath,
             module
           );
-          effects.moduleRecover.remove(sandbox.getId(), module);
+          effects.moduleRecover.remove(sandbox.id, module);
         } else {
           // We might not have the module, as it was created by the server. In
           // this case we put it in. There is an edge case here where the user
@@ -307,7 +303,7 @@ export const saveClicked: AsyncAction = withOwnedSandbox(
       });
 
       if (
-        sandbox.getOriginalGit() &&
+        sandbox.originalGit &&
         state.workspace.openedWorkspaceItem === 'github'
       ) {
         actions.git.internal.fetchGitChanges();
@@ -324,10 +320,10 @@ export const saveClicked: AsyncAction = withOwnedSandbox(
 );
 
 export const createZipClicked: Action = ({ state, effects }) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
-  effects.zip.download(state.editor.currentSandbox.get());
+  effects.zip.download(state.editor.sandbox.get());
 };
 
 export const forkExternalSandbox: AsyncAction<{
@@ -340,7 +336,7 @@ export const forkExternalSandbox: AsyncAction<{
   const forkedSandbox = await effects.api.forkSandbox(sandboxId, body);
 
   // state.editor.sandboxes[forkedSandbox.id] = forkedSandbox;
-  state.editor.currentSandbox.set(forkedSandbox);
+  state.editor.sandbox.set(forkedSandbox);
   effects.router.updateSandboxUrl(forkedSandbox, { openInNewWindow });
 };
 
@@ -349,31 +345,31 @@ export const forkSandboxClicked: AsyncAction = async ({
   effects,
   actions,
 }) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
   if (
-    state.editor.currentSandbox.isOwned() &&
-    !state.editor.currentSandbox.getCustomTemplate() &&
+    state.editor.sandbox.owned &&
+    !state.editor.sandbox.customTemplate &&
     !effects.browser.confirm('Do you want to fork your own sandbox?')
   ) {
     return;
   }
 
   await actions.editor.internal.forkSandbox({
-    sandboxId: state.editor.currentSandbox.getId(),
+    sandboxId: state.editor.sandbox.id,
   });
 };
 
 export const likeSandboxToggled: AsyncAction = async ({ state, effects }) => {
-  const wasLiked = state.editor.currentSandbox.isLiked();
-  const sandbox = state.editor.currentSandbox;
+  const wasLiked = state.editor.sandbox.userLiked;
+  const sandbox = state.editor.sandbox;
   sandbox.toggleLiked();
   if (wasLiked) {
-    await effects.api.unlikeSandbox(sandbox.getId());
+    await effects.api.unlikeSandbox(sandbox.id);
   } else {
-    await effects.api.likeSandbox(sandbox.getId());
+    await effects.api.likeSandbox(sandbox.id);
   }
 };
 
@@ -391,7 +387,7 @@ export const moduleSelected: Action<
 > = ({ actions, effects, state }, { id, path }) => {
   effects.analytics.track('Open File');
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   if (!sandbox) {
     return;
@@ -437,12 +433,12 @@ export const moduleSelected: Action<
     }
   } catch (error) {
     // You jumped to a file not in the Sandbox, for example typings
-    state.editor.currentSandbox.unsetCurrentModule();
+    state.editor.sandbox.unsetCurrentModule();
   }
 };
 
 export const clearModuleSelected: Action = ({ state }) => {
-  state.editor.currentSandbox.unsetCurrentModule();
+  state.editor.sandbox.unsetCurrentModule();
 };
 
 export const moduleDoubleClicked: Action = ({ state, effects }) => {
@@ -451,8 +447,7 @@ export const moduleDoubleClicked: Action = ({ state, effects }) => {
   const tabs = state.editor.tabs as ModuleTab[];
   const tab = tabs.find(
     tabItem =>
-      tabItem.moduleShortid ===
-      state.editor.currentSandbox.getCurrentModule().shortid
+      tabItem.moduleShortid === state.editor.sandbox.currentModule.shortid
   );
 
   if (tab) {
@@ -483,7 +478,7 @@ export const prettifyClicked: AsyncAction = async ({
   actions,
 }) => {
   effects.analytics.track('Prettify Code');
-  const module = state.editor.currentSandbox.getCurrentModule();
+  const module = state.editor.sandbox.currentModule;
   if (!module.id) {
     return;
   }
@@ -500,13 +495,13 @@ export const prettifyClicked: AsyncAction = async ({
 };
 
 export const errorsCleared: Action = ({ state, effects }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }
 
-  if (sandbox.getErrors().length) {
-    sandbox.getErrors().forEach(error => {
+  if (sandbox.errors.length) {
+    sandbox.errors.forEach(error => {
       try {
         const module = sandbox.getModuleByPath(error.path);
         module.errors = [];
@@ -532,9 +527,9 @@ export const frozenUpdated: AsyncAction<{ frozen: boolean }> = async (
   { state, effects },
   { frozen }
 ) => {
-  state.editor.currentSandbox.setFrozen(frozen);
+  state.editor.sandbox.setFrozen(frozen);
 
-  await effects.api.saveFrozen(state.editor.currentSandbox.getId(), frozen);
+  await effects.api.saveFrozen(state.editor.sandbox.id, frozen);
 };
 
 export const quickActionsOpened: Action = ({ state }) => {
@@ -563,7 +558,7 @@ export const discardModuleChanges: Action<{
 }> = ({ state, effects, actions }, { moduleShortid }) => {
   effects.analytics.track('Code Discarded');
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }
@@ -582,10 +577,8 @@ export const fetchEnvironmentVariables: AsyncAction = async ({
   state,
   effects,
 }) => {
-  state.editor.currentSandbox.setEnvironmentVariables(
-    await effects.api.getEnvironmentVariables(
-      state.editor.currentSandbox.getId()
-    )
+  state.editor.sandbox.setEnvironmentVariables(
+    await effects.api.getEnvironmentVariables(state.editor.sandbox.id)
   );
 };
 
@@ -593,9 +586,9 @@ export const updateEnvironmentVariables: AsyncAction<EnvironmentVariable> = asyn
   { effects, state },
   environmentVariable
 ) => {
-  state.editor.currentSandbox.setEnvironmentVariables(
+  state.editor.sandbox.setEnvironmentVariables(
     await effects.api.saveEnvironmentVariable(
-      state.editor.currentSandbox.getId(),
+      state.editor.sandbox.id,
       environmentVariable
     )
   );
@@ -606,11 +599,8 @@ export const updateEnvironmentVariables: AsyncAction<EnvironmentVariable> = asyn
 export const deleteEnvironmentVariable: AsyncAction<{
   name: string;
 }> = async ({ state, effects }, { name }) => {
-  state.editor.currentSandbox.setEnvironmentVariables(
-    await effects.api.deleteEnvironmentVariable(
-      state.editor.currentSandbox.getId(),
-      name
-    )
+  state.editor.sandbox.setEnvironmentVariables(
+    await effects.api.deleteEnvironmentVariable(state.editor.sandbox.id, name)
   );
   effects.codesandboxApi.restartSandbox();
 };
@@ -623,11 +613,11 @@ export const showEnvironmentVariablesNotification: AsyncAction = async ({
   actions,
   effects,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   await actions.editor.fetchEnvironmentVariables();
 
-  const environmentVariables = sandbox.getEnvironmentVariables();
+  const environmentVariables = sandbox.environmentVariables;
   const emptyVarCount = Object.keys(environmentVariables).filter(
     key => !environmentVariables[key]
   ).length;
@@ -674,7 +664,7 @@ export const previewActionReceived: Action<any> = (
       });
       break;
     case 'show-error': {
-      if (!state.editor.currentSandbox) {
+      if (!state.editor.sandbox) {
         return;
       }
       const error: ModuleError = {
@@ -690,15 +680,15 @@ export const previewActionReceived: Action<any> = (
         type: action.type,
       };
       try {
-        state.editor.currentSandbox.addError(error);
-        effects.vscode.setErrors(state.editor.currentSandbox.getErrors());
+        state.editor.sandbox.addError(error);
+        effects.vscode.setErrors(state.editor.sandbox.errors);
       } catch (e) {
         /* ignore, this module can be in a node_modules for example */
       }
       break;
     }
     case 'show-correction': {
-      if (!state.editor.currentSandbox) {
+      if (!state.editor.sandbox) {
         return;
       }
       const correction: ModuleCorrection = {
@@ -712,28 +702,26 @@ export const previewActionReceived: Action<any> = (
         severity: action.severity,
       };
       try {
-        state.editor.currentSandbox.addCorrection(correction);
-        effects.vscode.setCorrections(
-          state.editor.currentSandbox.getCorrections()
-        );
+        state.editor.sandbox.addCorrection(correction);
+        effects.vscode.setCorrections(state.editor.sandbox.corrections);
       } catch (e) {
         /* ignore, this module can be in a node_modules for example */
       }
       break;
     }
     case 'clear-errors': {
-      const sandbox = state.editor.currentSandbox;
-      const currentErrors = sandbox.getErrors();
+      const sandbox = state.editor.sandbox;
+      const currentErrors = sandbox.errors;
       const newErrors = clearCorrectionsFromAction(currentErrors, action);
 
-      state.editor.currentSandbox.clearErrors();
+      state.editor.sandbox.clearErrors();
       newErrors.forEach(error => sandbox.addError(error));
-      effects.vscode.setErrors(sandbox.getErrors());
+      effects.vscode.setErrors(sandbox.errors);
       break;
     }
     case 'clear-corrections': {
-      const sandbox = state.editor.currentSandbox;
-      const currentCorrections = sandbox.getCorrections();
+      const sandbox = state.editor.sandbox;
+      const currentCorrections = sandbox.corrections;
       // Uhm, clear corrections here as well?
       const newCorrections = clearCorrectionsFromAction(
         currentCorrections,
@@ -742,11 +730,11 @@ export const previewActionReceived: Action<any> = (
 
       sandbox.clearCorrections();
       newCorrections.forEach(correction => sandbox.addCorrection(correction));
-      effects.vscode.setCorrections(sandbox.getCorrections());
+      effects.vscode.setCorrections(sandbox.corrections);
       break;
     }
     case 'source.module.rename': {
-      const sandbox = state.editor.currentSandbox;
+      const sandbox = state.editor.sandbox;
       const module = sandbox.getModuleByPath(action.path.replace(/^\//, ''));
 
       if (module) {
@@ -769,7 +757,7 @@ export const renameModule: AsyncAction<{
   moduleShortid: string;
 }> = withOwnedSandbox(
   async ({ state, actions, effects }, { title, moduleShortid }) => {
-    const sandbox = state.editor.currentSandbox;
+    const sandbox = state.editor.sandbox;
     if (!sandbox) {
       return;
     }
@@ -784,7 +772,7 @@ export const renameModule: AsyncAction<{
     module.title = title;
 
     try {
-      await effects.api.saveModuleTitle(sandbox.getId(), moduleShortid, title);
+      await effects.api.saveModuleTitle(sandbox.id, moduleShortid, title);
 
       if (state.live.isCurrentEditor) {
         effects.live.sendModuleUpdate(module);

@@ -1,17 +1,13 @@
-import React, { FunctionComponent } from 'react';
-import { useOvermind } from 'app/overmind';
-
-import getNetlifyConfig from 'app/utils/getNetlifyConfig';
-
 import { resolveDirectory } from '@codesandbox/common/lib/sandbox/modules';
+import { useOvermind } from 'app/overmind';
+import getNetlifyConfig from 'app/utils/getNetlifyConfig';
+import React, { FunctionComponent } from 'react';
 
 import {
   WorkspaceInputContainer,
   WorkspaceSubtitle,
 } from '../../../../elements';
-
-import { Deploys, Deploy, Name } from '../../elements';
-
+import { Deploy, Deploys, Name } from '../../elements';
 import { Actions } from './Actions';
 import { SiteInfoWrapper } from './elements';
 import { Functions } from './Functions';
@@ -37,7 +33,7 @@ export const SiteInfo: FunctionComponent = () => {
         netlifyLogs,
         netlifySite: { id, name },
       },
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
     },
   } = useOvermind();
   const functionDirectory = getFunctionDir(currentSandbox);

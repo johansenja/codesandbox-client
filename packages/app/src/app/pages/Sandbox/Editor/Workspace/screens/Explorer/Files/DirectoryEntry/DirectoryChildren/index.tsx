@@ -40,14 +40,16 @@ const DirectoryChildren: React.FC<IDirectoryChildrenProps> = ({
     state: { isLoggedIn, editor: editorState },
     actions: { files, editor },
   } = useOvermind();
-  const { currentSandbox, mainModule, currentModuleShortid } = editorState;
+  const { sandbox } = editorState;
 
   const {
     id: sandboxId,
     modules,
+    mainModule,
+    currentModule,
     directories,
     template: sandboxTemplate,
-  } = currentSandbox;
+  } = sandbox;
 
   return (
     <div>
@@ -74,7 +76,7 @@ const DirectoryChildren: React.FC<IDirectoryChildrenProps> = ({
             mainModuleId={mainModule.id}
             modules={modules}
             directories={directories}
-            currentModuleShortid={currentModuleShortid}
+            currentModuleShortid={currentModule.shortid}
             isInProjectView={isInProjectView}
             markTabsNotDirty={markTabsNotDirty}
             getModulePath={getModulePath}

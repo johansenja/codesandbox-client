@@ -1,36 +1,33 @@
-import React, { useEffect } from 'react';
-import { useOvermind } from 'app/overmind';
-
-import {
-  Element,
-  Collapsible,
-  Text,
-  Button,
-  Link,
-  Label,
-  Avatar,
-  Stack,
-  List,
-  ListItem,
-  ListAction,
-  Switch,
-  Stats,
-  Tags,
-} from '@codesandbox/components';
-
+import getIcon from '@codesandbox/common/lib/templates/icons';
 import { getSandboxName } from '@codesandbox/common/lib/utils/get-sandbox-name';
 import {
-  sandboxUrl,
   profileUrl,
+  sandboxUrl,
 } from '@codesandbox/common/lib/utils/url-generator';
-import getTemplateDefinition from '@codesandbox/common/lib/templates';
+import {
+  Avatar,
+  Button,
+  Collapsible,
+  Element,
+  Label,
+  Link,
+  List,
+  ListAction,
+  ListItem,
+  Stack,
+  Stats,
+  Switch,
+  Tags,
+  Text,
+} from '@codesandbox/components';
 import { Icons } from '@codesandbox/template-icons';
-import getIcon from '@codesandbox/common/lib/templates/icons';
-
 import css from '@styled-system/css';
-import { TemplateConfig } from './TemplateConfig';
-import { PenIcon } from './icons';
+import { useOvermind } from 'app/overmind';
+import React, { useEffect } from 'react';
+
 import { EditSummary } from './EditSummary';
+import { PenIcon } from './icons';
+import { TemplateConfig } from './TemplateConfig';
 
 export const Summary = () => {
   const {
@@ -38,20 +35,13 @@ export const Summary = () => {
       editor: { frozenUpdated, sessionFreezeOverride },
     },
     state: {
-      editor: { currentSandbox, sessionFrozen },
+      editor: { sandbox, sessionFrozen },
     },
   } = useOvermind();
-  const {
-    author,
-    description,
-    isFrozen,
-    customTemplate,
-    template,
-    forkedFromSandbox,
-    forkedTemplateSandbox,
-    tags,
-    team,
-  } = currentSandbox;
+
+  const customTemplate = sandbox.customTemplate;
+  const author = sandbox.author;
+  const team = sandbox.team;
 
   useEffect(() => {
     // always freeze it on start
@@ -66,11 +56,12 @@ export const Summary = () => {
       return sessionFreezeOverride({ frozen: !sessionFrozen });
     }
 
-    return frozenUpdated({ frozen: !isFrozen });
+    return frozenUpdated({ frozen: !sandbox.isFrozen });
   };
 
-  const isForked = forkedFromSandbox || forkedTemplateSandbox;
-  const { url: templateUrl } = getTemplateDefinition(template);
+  const isForked =
+    sandbox.isForkedFromSandbox || sandbox.isForkedTemplateSandbox;
+  const { url: templateUrl } = sandbox.templateDefinition;
 
   const [editing, setEditing] = React.useState(false);
 
@@ -90,12 +81,12 @@ export const Summary = () => {
                   <Stack gap={2} align="center">
                     <TemplateIcon
                       iconUrl={customTemplate.iconUrl}
-                      environment={template}
+                      environment={sandbox.template}
                     />
-                    <Text maxWidth={190}>{getSandboxName(currentSandbox)}</Text>
+                    <Text maxWidth={190}>{sandbox.name}</Text>
                   </Stack>
                 ) : (
-                  <Text maxWidth={190}>{getSandboxName(currentSandbox)}</Text>
+                  <Text maxWidth={190}>{sandbox.name}</Text>
                 )}
                 <Button
                   variant="link"
@@ -107,12 +98,13 @@ export const Summary = () => {
               </Stack>
 
               <Text variant="muted" onClick={() => setEditing(true)}>
-                {description || 'Add a short description for this sandbox'}
+                {sandbox.description ||
+                  'Add a short description for this sandbox'}
               </Text>
 
-              {tags.length ? (
+              {sandbox.tags.length ? (
                 <Element marginTop={4}>
-                  <Tags tags={tags} />
+                  <Tags tags={sandbox.tags} />
                 </Element>
               ) : null}
             </Stack>
@@ -138,7 +130,7 @@ export const Summary = () => {
             </Link>
           ) : null}
 
-          <Stats sandbox={currentSandbox} />
+          <Stats sandbox={sandbox.get()} />
         </Stack>
 
         <Divider marginTop={8} marginBottom={4} />
@@ -150,25 +142,31 @@ export const Summary = () => {
             <Switch
               id="frozen"
               onChange={updateFrozenState}
-              on={customTemplate ? sessionFrozen : isFrozen}
+              on={customTemplate ? sessionFrozen : sandbox.isFrozen}
             />
           </ListAction>
           {isForked ? (
             <ListItem justify="space-between">
-              <Text>{forkedTemplateSandbox ? 'Template' : 'Forked From'}</Text>
+              <Text>
+                {sandbox.isForkedTemplateSandbox ? 'Template' : 'Forked From'}
+              </Text>
               <Link
                 variant="muted"
-                href={sandboxUrl(forkedFromSandbox || forkedTemplateSandbox)}
+                href={sandboxUrl(
+                  sandbox.forkedFromSandbox || sandbox.forkedTemplateSandbox
+                )}
                 target="_blank"
               >
-                {getSandboxName(forkedFromSandbox || forkedTemplateSandbox)}
+                {getSandboxName(
+                  sandbox.forkedFromSandbox || sandbox.forkedTemplateSandbox
+                )}
               </Link>
             </ListItem>
           ) : null}
           <ListItem justify="space-between">
             <Text>Environment</Text>
             <Link variant="muted" href={templateUrl} target="_blank">
-              {template}
+              {sandbox.template}
             </Link>
           </ListItem>
         </List>

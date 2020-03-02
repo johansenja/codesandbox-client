@@ -1,7 +1,7 @@
 import GithubBadge from '@codesandbox/common/lib/components/GithubBadge';
 import { githubRepoUrl } from '@codesandbox/common/lib/utils/url-generator';
-import React, { FunctionComponent } from 'react';
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { Item } from './elements';
 
@@ -9,7 +9,7 @@ export const Git: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: {
+        sandbox: {
           git,
           git: { branch, commitSha, repo, username },
         },

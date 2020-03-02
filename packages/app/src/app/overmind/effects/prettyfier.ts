@@ -1,9 +1,9 @@
+import { Module, PrettierConfig } from '@codesandbox/common/lib/types';
 import prettify from 'app/utils/prettify';
-import { PrettierConfig, Module } from '@codesandbox/common/lib/types';
 
 type Options = {
   getPrettierConfig(): PrettierConfig;
-  getCurrentModule(): Module;
+  getCurrentModule(): Module | null;
 };
 
 let _options: Options;

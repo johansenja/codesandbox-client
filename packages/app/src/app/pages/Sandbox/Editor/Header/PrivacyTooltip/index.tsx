@@ -1,12 +1,11 @@
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
 import theme from '@codesandbox/common/lib/design-language/theme';
 import track from '@codesandbox/common/lib/utils/analytics';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 import { ThemeProvider } from 'styled-components';
 
-import { useOvermind } from 'app/overmind';
-
-import { Container, Text, Link, Select } from './elements';
+import { Container, Link, Select, Text } from './elements';
 import { Private, Public, Unlisted } from './icons';
 
 export const PrivacyTooltip: FunctionComponent = () => {
@@ -16,7 +15,7 @@ export const PrivacyTooltip: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { owned, privacy },
+        sandbox: { owned, privacy },
       },
       user,
     },

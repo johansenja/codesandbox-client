@@ -1,35 +1,33 @@
-import React from 'react';
-import { useOvermind } from 'app/overmind';
-
+import getTemplateDefinition from '@codesandbox/common/lib/templates';
+import getIcon from '@codesandbox/common/lib/templates/icons';
 import { getSandboxName } from '@codesandbox/common/lib/utils/get-sandbox-name';
 import {
-  sandboxUrl,
   profileUrl,
+  sandboxUrl,
 } from '@codesandbox/common/lib/utils/url-generator';
-import getTemplateDefinition from '@codesandbox/common/lib/templates';
-import { Icons } from '@codesandbox/template-icons';
-import getIcon from '@codesandbox/common/lib/templates/icons';
-
 import {
-  Element,
-  Collapsible,
-  Text,
-  Link,
   Avatar,
-  Stack,
+  Collapsible,
+  Element,
+  Link,
   List,
   ListItem,
+  Stack,
   Stats,
   Tags,
+  Text,
 } from '@codesandbox/components';
+import { Icons } from '@codesandbox/template-icons';
 import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
+import React from 'react';
 
 import { BookmarkTemplateButton } from './BookmarkTemplateButton';
 
 export const Summary = () => {
   const {
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox },
     },
   } = useOvermind();
   const {
@@ -41,7 +39,7 @@ export const Summary = () => {
     forkedTemplateSandbox,
     tags,
     team,
-  } = currentSandbox;
+  } = sandbox;
 
   const isForked = forkedFromSandbox || forkedTemplateSandbox;
   const { url: templateUrl } = getTemplateDefinition(template);
@@ -61,10 +59,10 @@ export const Summary = () => {
                     iconUrl={customTemplate.iconUrl}
                     environment={template}
                   />
-                  <Text maxWidth={190}>{getSandboxName(currentSandbox)}</Text>
+                  <Text maxWidth={190}>{getSandboxName(sandbox.get())}</Text>
                 </Stack>
               ) : (
-                <Text maxWidth={190}>{getSandboxName(currentSandbox)}</Text>
+                <Text maxWidth={190}>{getSandboxName(sandbox.get())}</Text>
               )}
             </Stack>
 
@@ -79,7 +77,7 @@ export const Summary = () => {
         </Element>
 
         <Stack as="section" direction="vertical" gap={6} paddingX={2}>
-          <Stats sandbox={currentSandbox} />
+          <Stats sandbox={sandbox.get()} />
           {customTemplate && <BookmarkTemplateButton />}
         </Stack>
 

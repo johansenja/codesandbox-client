@@ -1,11 +1,8 @@
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Description } from '../../elements';
-
 import { More } from '../More';
-
 import { Netlify } from './Netlify';
 import { Zeit } from './Zeit';
 
@@ -15,7 +12,7 @@ export const Deployment: FunctionComponent = () => {
       deployment: { getDeploys },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       isLoggedIn,
     },
   } = useOvermind();

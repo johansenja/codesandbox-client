@@ -65,11 +65,10 @@ export const initialize: AsyncAction<string, Sandbox | null> = async (
 
     const sandboxId = roomInfo.sandboxId;
 
-    let sandbox = state.editor.currentSandbox;
+    let sandbox = state.editor.sandbox.get();
     if (!sandbox || sandbox.id !== sandboxId) {
       sandbox = await effects.api.getSandbox(sandboxId);
-      state.editor.sandboxes[sandboxId] = sandbox;
-      state.editor.currentId = sandboxId;
+      state.editor.sandbox.set(sandbox);
     }
 
     effects.analytics.track('Live Session Joined', {});
@@ -92,7 +91,7 @@ export const initializeModuleState: Action<any> = (
   { state, actions, effects },
   moduleState
 ) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }

@@ -1,15 +1,16 @@
-import React from 'react';
 import { useOvermind } from 'app/overmind';
-import { Files } from './Files';
+import React from 'react';
+
 import { Dependencies } from './Dependencies';
 import { ExternalResources } from './ExternalResources';
+import { Files } from './Files';
 
 export const Explorer = () => {
   const {
     state: { editor },
   } = useOvermind();
 
-  const template = editor.currentSandbox.template;
+  const template = editor.sandbox.template;
 
   return (
     <>

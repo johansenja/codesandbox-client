@@ -1,8 +1,7 @@
 import { UploadFile } from '@codesandbox/common/lib/types';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 import AddIcon from 'react-icons/lib/md/add';
-
-import { useOvermind } from 'app/overmind';
 
 import { Button } from './Button';
 
@@ -16,7 +15,7 @@ export const AddFileToSandboxButton: FunctionComponent<Props> = ({
       files: { addedFileToSandbox },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
     },
   } = useOvermind();
 

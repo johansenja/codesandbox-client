@@ -1,23 +1,21 @@
 import Margin from '@codesandbox/common/lib/components/spacing/Margin';
 import { ServerPort } from '@codesandbox/common/lib/types';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 import BrowserIcon from 'react-icons/lib/go/browser';
 
-import { useOvermind } from 'app/overmind';
-
 import {
   Description,
-  WorkspaceInputContainer,
   EntryContainer,
+  WorkspaceInputContainer,
 } from '../../elements';
-
 import {
+  ActionButton,
+  MainBadge,
+  Port,
+  Power as PowerIcon,
   SubTitle,
   TasksContainer,
-  Port,
-  MainBadge,
-  ActionButton,
-  Power as PowerIcon,
 } from './elements';
 import { EnvironmentVariables } from './EnvVars';
 import { Status } from './Status';
@@ -35,7 +33,7 @@ export const Server: FunctionComponent = () => {
     },
     state: {
       server,
-      editor: { currentSandbox: sandbox, parsedConfigurations },
+      editor: { sandbox },
     },
   } = useOvermind();
 
@@ -67,7 +65,7 @@ export const Server: FunctionComponent = () => {
         <SubTitle>Run Scripts</SubTitle>
         <Margin top={0.5}>
           <TasksContainer disconnected={disconnected}>
-            <Tasks package={parsedConfigurations?.package?.parsed} />
+            <Tasks package={sandbox.parsedConfigurations?.package?.parsed} />
           </TasksContainer>
         </Margin>
       </Margin>

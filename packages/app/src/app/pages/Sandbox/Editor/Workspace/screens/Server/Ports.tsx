@@ -1,14 +1,14 @@
-import React from 'react';
+import { ServerPort } from '@codesandbox/common/lib/types';
 import {
   Collapsible,
   List,
   ListAction,
-  Text,
   Stack,
+  Text,
 } from '@codesandbox/components';
 import css from '@styled-system/css';
 import { useOvermind } from 'app/overmind';
-import { ServerPort } from '@codesandbox/common/lib/types';
+import React from 'react';
 import BrowserIcon from 'react-icons/lib/go/browser';
 
 export const Ports = () => {
@@ -18,7 +18,7 @@ export const Ports = () => {
     },
     state: {
       server: { ports },
-      editor: { currentSandbox: sandbox },
+      editor: { sandbox },
     },
   } = useOvermind();
 

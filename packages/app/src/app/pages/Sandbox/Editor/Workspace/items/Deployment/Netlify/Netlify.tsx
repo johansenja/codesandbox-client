@@ -1,11 +1,8 @@
 import getTemplate from '@codesandbox/common/lib/templates';
-
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Wrapper } from '../elements';
-
 import { DeployButton } from './DeployButton';
 import { SiteInfo } from './SiteInfo';
 
@@ -16,7 +13,7 @@ export const Netlify: FunctionComponent = () => {
     },
     state: {
       deployment: { deploying, netlifySite },
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
     },
   } = useOvermind();
   const [isVisible, setVisible] = useState(false);

@@ -114,7 +114,7 @@ export const LivePage: React.FC<Props> = ({ match }) => {
       state.isAuthenticating ||
       state.editor.isLoading ||
       state.live.isLoading ||
-      !state.editor.currentSandbox
+      !state.editor.sandbox
     ) {
       return (
         <>
@@ -164,7 +164,7 @@ export const LivePage: React.FC<Props> = ({ match }) => {
     );
   }
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   return (
     <>

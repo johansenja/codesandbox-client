@@ -1,13 +1,11 @@
-import { Sandbox } from '@codesandbox/common/lib/types';
-import React, { FunctionComponent, ComponentProps } from 'react';
-import { StyledComponentInnerOtherProps } from 'styled-components';
-
-import { useOvermind } from 'app/overmind';
-
 // @ts-ignore
 import HeartIcon from '-!svg-react-loader!@codesandbox/common/lib/icons/heart-open.svg'; // eslint-disable-line import/no-webpack-loader-syntax
 // @ts-ignore
 import FullHeartIcon from '-!svg-react-loader!@codesandbox/common/lib/icons/heart.svg'; // eslint-disable-line import/no-webpack-loader-syntax
+import { Sandbox } from '@codesandbox/common/lib/types';
+import { useOvermind } from 'app/overmind';
+import React, { ComponentProps, FunctionComponent } from 'react';
+import { StyledComponentInnerOtherProps } from 'styled-components';
 
 import { Container } from './elements';
 import { MaybeTooltip } from './MaybeTooltip';
@@ -46,7 +44,7 @@ export const LikeHeart: FunctionComponent<Props> = ({
       highlightHover={highlightHover}
       liked={userLiked}
       loggedIn={isLoggedIn}
-      onClick={isLoggedIn ? () => likeSandboxToggled(id) : noop}
+      onClick={isLoggedIn ? () => likeSandboxToggled() : noop}
       style={style}
     >
       <MaybeTooltip

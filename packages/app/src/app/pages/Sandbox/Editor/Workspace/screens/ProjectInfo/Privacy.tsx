@@ -1,13 +1,14 @@
-import React from 'react';
 import {
   Collapsible,
-  Text,
   Link,
-  Stack,
   Select,
+  Stack,
+  Text,
 } from '@codesandbox/components';
-import { useOvermind } from 'app/overmind';
 import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
+import React from 'react';
+
 import { GlobeIcon } from './icons';
 
 export const Privacy = () => {
@@ -16,7 +17,7 @@ export const Privacy = () => {
       workspace: { sandboxPrivacyChanged },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       user,
     },
   } = useOvermind();

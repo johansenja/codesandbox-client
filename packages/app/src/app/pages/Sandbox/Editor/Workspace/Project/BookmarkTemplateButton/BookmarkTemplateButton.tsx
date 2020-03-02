@@ -1,22 +1,23 @@
-import React, { useEffect } from 'react';
 import {
+  MutationHookOptions,
   useLazyQuery,
   useMutation,
-  MutationHookOptions,
 } from '@apollo/react-hooks';
-import { useOvermind } from 'app/overmind';
+import { MultiAction } from '@codesandbox/common/lib/components/MultiAction';
 import {
-  BookmarkedSandboxInfoQuery,
   BookmarkTemplateMutation,
   BookmarkTemplateMutationVariables,
+  BookmarkedSandboxInfoQuery,
+  BookmarkedSandboxInfoQueryVariables,
   UnbookmarkTemplateMutation,
   UnbookmarkTemplateMutationVariables,
-  BookmarkedSandboxInfoQueryVariables,
 } from 'app/graphql/types';
+import { useOvermind } from 'app/overmind';
+import React, { useEffect } from 'react';
 import Checked from 'react-icons/lib/md/check-box';
 import Unchecked from 'react-icons/lib/md/check-box-outline-blank';
-import { MultiAction } from '@codesandbox/common/lib/components/MultiAction';
 import * as CSSProps from 'styled-components/cssprop'; // eslint-disable-line
+
 import { ButtonContainer, ButtonIcon } from './elements';
 import { BOOKMARK_TEMPLATE, UNBOOKMARK_TEMPLATE } from './mutations';
 import { BOOKMARKED_SANDBOX_INFO } from './queries';
@@ -30,8 +31,7 @@ export const BookmarkTemplateButton = ({ style }: IBookmarkTemplateButton) => {
     state: {
       isLoggedIn,
       editor: {
-        currentId: sandboxId,
-        currentSandbox: { customTemplate },
+        sandbox: { id, customTemplate },
       },
     },
   } = useOvermind();
@@ -43,10 +43,10 @@ export const BookmarkTemplateButton = ({ style }: IBookmarkTemplateButton) => {
   useEffect(() => {
     if (isLoggedIn) {
       runQuery({
-        variables: { sandboxId },
+        variables: { sandboxId: id },
       });
     }
-  }, [isLoggedIn, runQuery, sandboxId]);
+  }, [isLoggedIn, runQuery, id]);
 
   const bookmarkInfos = data?.sandbox?.customTemplate?.bookmarked || [];
 

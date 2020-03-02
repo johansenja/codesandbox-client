@@ -1,21 +1,17 @@
-import getTemplate from '@codesandbox/common/lib/templates';
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { Container } from './elements';
 
 export const SSEDownNotice: FunctionComponent = () => {
   const {
     state: {
-      editor: {
-        currentSandbox: { template },
-      },
+      editor: { sandbox },
       server: { status },
     },
   } = useOvermind();
 
-  if (!getTemplate(template).isServer) {
+  if (!sandbox.templateDefinition.isServer) {
     return null;
   }
 

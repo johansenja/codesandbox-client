@@ -1,18 +1,16 @@
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
 import getTemplateDefinition from '@codesandbox/common/lib/templates';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Item, PropertyName, PropertyValue, QuestionIcon } from '../elements';
-
 import { BundlerLink } from './elements';
 
 export const Environment: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: { template },
+        sandbox: { template },
       },
     },
   } = useOvermind();

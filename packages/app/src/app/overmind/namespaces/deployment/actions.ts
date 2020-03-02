@@ -18,7 +18,7 @@ export const deployWithNetlify: AsyncAction = async ({
   actions,
   state,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   state.deployment.deploying = true;
   state.deployment.netlifyLogs = null;
@@ -50,14 +50,14 @@ export const deployWithNetlify: AsyncAction = async ({
 };
 
 export const getNetlifyDeploys: AsyncAction = async ({ state, effects }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   try {
     state.deployment.netlifyClaimUrl = await effects.netlify.claimSite(
-      sandbox.getId()
+      sandbox.id
     );
     state.deployment.netlifySite = await effects.netlify.getDeployments(
-      sandbox.getId()
+      sandbox.id
     );
   } catch (error) {
     state.deployment.netlifySite = null;
@@ -72,9 +72,7 @@ export const getDeploys: AsyncAction = async ({ state, actions, effects }) => {
   state.deployment.gettingDeploys = true;
 
   try {
-    const zeitConfig = effects.zeit.getConfig(
-      state.editor.currentSandbox.get()
-    );
+    const zeitConfig = effects.zeit.getConfig(state.editor.sandbox.get());
 
     state.deployment.hasAlias = !!zeitConfig.alias;
     if (zeitConfig.name) {
@@ -97,7 +95,7 @@ export const deployClicked: AsyncAction = async ({
   effects,
   actions,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   try {
     state.deployment.deploying = true;
@@ -192,7 +190,7 @@ export const aliasDeployment: AsyncAction<string> = async (
   { state, effects, actions },
   id
 ) => {
-  const zeitConfig = effects.zeit.getConfig(state.editor.currentSandbox.get());
+  const zeitConfig = effects.zeit.getConfig(state.editor.sandbox.get());
 
   try {
     const url = await effects.zeit.aliasDeployment(id, zeitConfig);

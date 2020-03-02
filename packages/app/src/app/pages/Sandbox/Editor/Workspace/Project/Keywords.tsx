@@ -17,7 +17,7 @@ export const Keywords: FunctionComponent<Props> = ({ editable }) => {
     },
     state: {
       editor: {
-        currentSandbox: { template, tags },
+        sandbox: { template, tags },
       },
       workspace: {
         tags: { tagName },

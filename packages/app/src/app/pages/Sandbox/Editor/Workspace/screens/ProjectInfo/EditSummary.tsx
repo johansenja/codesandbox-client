@@ -1,15 +1,15 @@
-import React from 'react';
-import { useOvermind } from 'app/overmind';
-import css from '@styled-system/css';
+import { ENTER } from '@codesandbox/common/lib/utils/keycodes';
 import {
-  Stack,
+  Button,
   FormField,
   Input,
-  Textarea,
-  Button,
+  Stack,
   TagInput,
+  Textarea,
 } from '@codesandbox/components';
-import { ENTER } from '@codesandbox/common/lib/utils/keycodes';
+import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
+import React from 'react';
 
 export const EditSummary = ({ setEditing }) => {
   const {
@@ -17,9 +17,7 @@ export const EditSummary = ({ setEditing }) => {
       workspace: { sandboxInfoUpdated, valueChanged, tagsChanged2 },
     },
     state: {
-      editor: {
-        currentSandbox: { tags },
-      },
+      editor: { sandbox },
       workspace: {
         project: { title, description },
       },
@@ -40,7 +38,7 @@ export const EditSummary = ({ setEditing }) => {
     if (event.keyCode === ENTER && !event.shiftKey) onSubmit(event);
   };
 
-  const [newTags, setNewTags] = React.useState(tags || []);
+  const [newTags, setNewTags] = React.useState(sandbox.tags || []);
 
   const onSubmit = event => {
     event.preventDefault();

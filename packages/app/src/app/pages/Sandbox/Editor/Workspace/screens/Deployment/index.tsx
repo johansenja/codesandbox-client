@@ -1,13 +1,11 @@
+import { Collapsible, Element, Stack, Text } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
-import { Element, Collapsible, Stack, Text } from '@codesandbox/components';
-
 import { Netlify } from './Netlify';
-import { Zeit } from './Zeit';
 import { NotLoggedIn } from './NotLoggedIn';
 import { NotOwner } from './NotOwner';
+import { Zeit } from './Zeit';
 
 export const Deployment: FunctionComponent = () => {
   const {
@@ -16,7 +14,7 @@ export const Deployment: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { owned },
+        sandbox: { owned },
       },
       isLoggedIn,
     },
@@ -24,7 +22,7 @@ export const Deployment: FunctionComponent = () => {
 
   useEffect(() => {
     if (owned && isLoggedIn) getDeploys();
-  }, [getDeploys, owned, isLoggedIn]);
+  }, [getDeploys, isLoggedIn, owned]);
 
   if (!isLoggedIn) return <NotLoggedIn />;
   if (!owned) return <NotOwner />;

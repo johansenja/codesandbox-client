@@ -1,13 +1,13 @@
-import React, { ChangeEvent } from 'react';
-import css from '@styled-system/css';
 import {
-  FormField,
-  Stack,
-  Input,
-  Textarea,
   Button,
+  FormField,
+  Input,
+  Stack,
+  Textarea,
 } from '@codesandbox/components';
+import css from '@styled-system/css';
 import { useOvermind } from 'app/overmind';
+import React, { ChangeEvent } from 'react';
 
 export const CommitForm = () => {
   const {
@@ -20,7 +20,9 @@ export const CommitForm = () => {
       },
     },
     state: {
-      editor: { isAllModulesSynced },
+      editor: {
+        sandbox: { isAllModulesSynced },
+      },
       git: { description, originalGitChanges, subject },
     },
   } = useOvermind();

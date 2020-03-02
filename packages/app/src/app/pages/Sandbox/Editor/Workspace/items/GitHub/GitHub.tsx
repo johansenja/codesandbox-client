@@ -1,20 +1,18 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
 import { GithubIntegration } from 'app/pages/common/GithubIntegration';
+import React, { FunctionComponent } from 'react';
 
 import { Description } from '../../elements';
 import { WorkspaceItem } from '../../WorkspaceItem';
-
+import { More } from '../More';
 import { CreateRepo } from './CreateRepo';
 import { Git } from './Git';
-import { More } from '../More';
 
 export const GitHub: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: { originalGit, owned },
+        sandbox: { originalGit, owned },
       },
       isLoggedIn,
       user,

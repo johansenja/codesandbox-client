@@ -1,4 +1,5 @@
 import { ESC } from '@codesandbox/common/lib/utils/keycodes';
+import { useOvermind } from 'app/overmind';
 import React, {
   ChangeEvent,
   FunctionComponent,
@@ -6,12 +7,8 @@ import React, {
   useState,
 } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { WorkspaceInputContainer } from '../../elements';
-
 import { EditPenIcon } from '../elements';
-
 import { SandboxAlias } from './elements';
 
 type Props = {
@@ -23,7 +20,7 @@ export const Alias: FunctionComponent<Props> = ({ editable }) => {
       workspace: { sandboxInfoUpdated, valueChanged },
     },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       workspace: { project },
     },
   } = useOvermind();

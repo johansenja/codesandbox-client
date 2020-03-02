@@ -1,8 +1,7 @@
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
-import { ProgressButton, ForkIcon } from './elements';
+import { ForkIcon, ProgressButton } from './elements';
 
 export const ForkButton: FunctionComponent = () => {
   const {
@@ -11,7 +10,7 @@ export const ForkButton: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { owned },
+        sandbox: { owned },
         isForkingSandbox,
       },
     },

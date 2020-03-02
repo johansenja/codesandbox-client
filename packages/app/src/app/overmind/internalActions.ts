@@ -15,8 +15,6 @@ import values from 'lodash-es/values';
 
 import { ApiError } from './effects/api/apiFactory';
 import { createOptimisticModule } from './utils/common';
-import { defaultOpenedModule, mainModule } from './utils/main-module';
-import { parseConfigurations } from './utils/parse-configurations';
 import { Action, AsyncAction } from '.';
 
 export const signIn: AsyncAction<{ useExtraScopes?: boolean }> = async (
@@ -176,25 +174,7 @@ export const setCurrentSandbox: AsyncAction<Sandbox> = async (
   { state, effects, actions },
   sandbox
 ) => {
-  state.editor.sandboxes[sandbox.id] = sandbox;
-  state.editor.currentId = sandbox.id;
-
-  let { currentModuleShortid } = state.editor;
-  const parsedConfigs = parseConfigurations(sandbox);
-  const main = mainModule(sandbox, parsedConfigs);
-
-  state.editor.mainModuleShortid = main.shortid;
-
-  // Only change the module shortid if it doesn't exist in the new sandbox
-  // This can happen when a sandbox is opened that's different from the current
-  // sandbox, with completely different files
-  if (
-    !sandbox.modules.find(module => module.shortid === currentModuleShortid)
-  ) {
-    const defaultModule = defaultOpenedModule(sandbox, parsedConfigs);
-
-    currentModuleShortid = defaultModule.shortid;
-  }
+  state.editor.sandbox.set(sandbox);
 
   const sandboxOptions = effects.router.getSandboxOptions();
 
@@ -208,9 +188,10 @@ export const setCurrentSandbox: AsyncAction<Sandbox> = async (
         // @ts-ignore
         sandboxOptions.currentModule.directoryShortid
       );
-      currentModuleShortid = resolvedModule
-        ? resolvedModule.shortid
-        : currentModuleShortid;
+
+      if (resolvedModule) {
+        state.editor.sandbox.setCurrentModule(resolvedModule);
+      }
     } catch (error) {
       actions.internal.handleError({
         message: `Could not find module ${sandboxOptions.currentModule}`,
@@ -219,7 +200,6 @@ export const setCurrentSandbox: AsyncAction<Sandbox> = async (
     }
   }
 
-  state.editor.currentModuleShortid = currentModuleShortid;
   state.editor.workspaceConfigCode = '';
 
   state.server.status = ServerStatus.INITIALIZING;
@@ -230,7 +210,7 @@ export const setCurrentSandbox: AsyncAction<Sandbox> = async (
 
   const newTab: ModuleTab = {
     type: TabType.MODULE,
-    moduleShortid: currentModuleShortid,
+    moduleShortid: state.editor.sandbox.currentModule.shortid,
     dirty: true,
   };
 
@@ -276,15 +256,15 @@ export const updateCurrentSandbox: AsyncAction<Sandbox> = async (
   { state },
   sandbox
 ) => {
-  if (!state.editor.currentSandbox) {
+  if (!state.editor.sandbox) {
     return;
   }
 
-  state.editor.currentSandbox.team = sandbox.team || null;
-  state.editor.currentSandbox.collection = sandbox.collection;
-  state.editor.currentSandbox.owned = sandbox.owned;
-  state.editor.currentSandbox.userLiked = sandbox.userLiked;
-  state.editor.currentSandbox.title = sandbox.title;
+  state.editor.sandbox.setTeam(sandbox.team || null);
+  state.editor.sandbox.setCollection(sandbox.collection);
+  state.editor.sandbox.setOwned(sandbox.owned);
+  state.editor.sandbox.setLiked(sandbox.userLiked);
+  state.editor.sandbox.setTitle(sandbox.title);
 };
 
 export const ensurePackageJSON: AsyncAction = async ({
@@ -292,7 +272,7 @@ export const ensurePackageJSON: AsyncAction = async ({
   actions,
   effects,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }
@@ -306,7 +286,7 @@ export const ensurePackageJSON: AsyncAction = async ({
     const optimisticModule = createOptimisticModule({
       id: optimisticId,
       title: 'package.json',
-      code: generatePackageJsonFromSandbox(sandbox),
+      code: generatePackageJsonFromSandbox(sandbox.get()),
       path: '/package.json',
     });
 
@@ -329,7 +309,9 @@ export const ensurePackageJSON: AsyncAction = async ({
       module.shortid = updatedModule.shortid;
     } catch (error) {
       sandbox.modules.splice(sandbox.modules.indexOf(module), 1);
-      state.editor.modulesByPath = effects.vscode.sandboxFsSync.create(sandbox);
+      state.editor.modulesByPath = effects.vscode.sandboxFsSync.create(
+        sandbox.get()
+      );
       actions.internal.handleError({
         message: 'Could not add package.json file',
         error,
@@ -339,7 +321,7 @@ export const ensurePackageJSON: AsyncAction = async ({
 };
 
 export const closeTabByIndex: Action<number> = ({ state }, tabIndex) => {
-  const { currentModule } = state.editor;
+  const { currentModule } = state.editor.sandbox;
   const tabs = state.editor.tabs as ModuleTab[];
   const isActiveTab = currentModule.shortid === tabs[tabIndex].moduleShortid;
 
@@ -347,7 +329,7 @@ export const closeTabByIndex: Action<number> = ({ state }, tabIndex) => {
     const newTab = tabIndex > 0 ? tabs[tabIndex - 1] : tabs[tabIndex + 1];
 
     if (newTab) {
-      state.editor.currentModuleShortid = newTab.moduleShortid;
+      currentModule.shortid = newTab.moduleShortid;
     }
   }
 

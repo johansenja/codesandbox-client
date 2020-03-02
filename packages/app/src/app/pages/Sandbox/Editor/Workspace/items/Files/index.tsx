@@ -1,17 +1,17 @@
+import { useOvermind } from 'app/overmind';
 import React, { useState } from 'react';
 
-import { useOvermind } from 'app/overmind';
-import { Files } from '../../Files';
 import { Dependencies } from '../../Dependencies';
-import { WorkspaceItem } from '../../WorkspaceItem';
 import { ItemTitle } from '../../elements';
+import { Files } from '../../Files';
+import { WorkspaceItem } from '../../WorkspaceItem';
 
 export const FilesItem = () => {
   const [editActions, setEditActions] = useState(null);
   const {
     state: { editor },
   } = useOvermind();
-  const staticTemplate = editor.currentSandbox.template === 'static';
+  const staticTemplate = editor.sandbox.template === 'static';
 
   return (
     <div>

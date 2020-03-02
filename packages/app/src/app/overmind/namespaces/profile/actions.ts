@@ -12,13 +12,10 @@ export const profileMounted: AsyncAction<string> = withLoadApp(
     state.profile.profiles[profile.id] = profile;
     state.profile.currentProfileId = profile.id;
 
-    if (
-      profile.showcasedSandboxShortid &&
-      !state.editor.sandboxes[profile.showcasedSandboxShortid]
-    ) {
-      state.editor.sandboxes[
-        profile.showcasedSandboxShortid
-      ] = await effects.api.getSandbox(profile.showcasedSandboxShortid);
+    if (profile.showcasedSandboxShortid) {
+      state.editor.sandbox.set(
+        await effects.api.getSandbox(profile.showcasedSandboxShortid)
+      );
     }
 
     state.profile.isLoadingProfile = false;
@@ -111,12 +108,12 @@ export const newSandboxShowcaseSelected: AsyncAction<string> = async (
   }
 
   const [sandbox] = await Promise.all([
-    state.editor.sandboxes[id] ? null : effects.api.getSandbox(id),
+    effects.api.getSandbox(id),
     effects.api.updateShowcasedSandbox(state.user.username, id),
   ]);
 
   if (sandbox) {
-    state.editor.sandboxes[id] = sandbox as Sandbox;
+    state.editor.sandbox.set(sandbox as Sandbox);
   }
 
   state.profile.isLoadingProfile = false;

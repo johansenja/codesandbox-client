@@ -108,7 +108,7 @@ export const ShareModal: React.FC<Props> = () => {
     event.target.select();
   }
 
-  const { mainModule, currentSandbox: sandbox } = editor;
+  const { sandbox } = editor;
   const {
     view,
     theme,
@@ -123,14 +123,14 @@ export const ShareModal: React.FC<Props> = () => {
     expandDevTools,
   } = state;
 
-  const defaultModule = state.defaultModule || mainModule.id;
+  const defaultModule = state.defaultModule || sandbox.mainModule.id;
 
   return (
     <>
       <header
         // eslint-disable-next-line
         dangerouslySetInnerHTML={{
-          __html: getIframeScript(sandbox, mainModule, state),
+          __html: getIframeScript(sandbox, sandbox.mainModule, state),
         }}
       />
 
@@ -241,7 +241,7 @@ export const ShareModal: React.FC<Props> = () => {
                 <LinkName>Editor url (also works on Medium)</LinkName>
                 <input
                   onFocus={select}
-                  value={getEditorUrl(sandbox, mainModule, state)}
+                  value={getEditorUrl(sandbox, sandbox.mainModule, state)}
                   readOnly
                 />
               </Inputs>
@@ -249,7 +249,7 @@ export const ShareModal: React.FC<Props> = () => {
                 <LinkName>Embed url</LinkName>
                 <input
                   onFocus={select}
-                  value={getEmbedUrl(sandbox, mainModule, state)}
+                  value={getEmbedUrl(sandbox, sandbox.mainModule, state)}
                   readOnly
                 />
               </Inputs>
@@ -257,7 +257,7 @@ export const ShareModal: React.FC<Props> = () => {
                 <LinkName>iframe</LinkName>
                 <textarea
                   onFocus={select}
-                  value={getIframeScript(sandbox, mainModule, state)}
+                  value={getIframeScript(sandbox, sandbox.mainModule, state)}
                   readOnly
                 />
               </Inputs>
@@ -274,7 +274,7 @@ export const ShareModal: React.FC<Props> = () => {
                 <LinkName>Markdown</LinkName>
                 <textarea
                   onFocus={select}
-                  value={getButtonMarkdown(sandbox, mainModule, state)}
+                  value={getButtonMarkdown(sandbox, sandbox.mainModule, state)}
                   readOnly
                 />
               </Inputs>
@@ -282,7 +282,7 @@ export const ShareModal: React.FC<Props> = () => {
                 <LinkName>HTML</LinkName>
                 <textarea
                   onFocus={select}
-                  value={getButtonHTML(sandbox, mainModule, state)}
+                  value={getButtonHTML(sandbox, sandbox.mainModule, state)}
                   readOnly
                 />
               </Inputs>
@@ -290,7 +290,7 @@ export const ShareModal: React.FC<Props> = () => {
             <Title title="Share QR code">
               <Inputs>
                 <QRCode
-                  value={getEmbedUrl(sandbox, mainModule, state)}
+                  value={getEmbedUrl(sandbox, sandbox.mainModule, state)}
                   size="100%"
                   renderAs="svg"
                 />
@@ -320,7 +320,7 @@ export const ShareModal: React.FC<Props> = () => {
                   href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
                     `${sandbox.title || sandbox.id}. ${getEditorUrl(
                       sandbox,
-                      mainModule,
+                      sandbox.mainModule,
                       state
                     )}`
                   )}`}

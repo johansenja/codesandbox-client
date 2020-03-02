@@ -79,12 +79,12 @@ export const withOwnedSandbox = <T>(
 ): AsyncAction<T> => async (context, payload) => {
   const { state, actions } = context;
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (sandbox) {
     if (
       typeof requiredPermission === 'undefined'
         ? !sandbox.owned
-        : !hasPermission(sandbox.authorization, requiredPermission)
+        : !sandbox.hasPermission(requiredPermission)
     ) {
       if (state.editor.isForkingSandbox) {
         return cancelAction(context, payload);
@@ -103,7 +103,7 @@ export const withOwnedSandbox = <T>(
       if (modalResponse === 'fork') {
         try {
           await actions.editor.internal.forkSandbox({
-            sandboxId: state.editor.currentId!,
+            sandboxId: state.editor.sandbox.id!,
           });
         } catch (e) {
           return cancelAction(context, payload);

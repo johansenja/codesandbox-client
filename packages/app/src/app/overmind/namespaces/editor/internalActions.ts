@@ -11,38 +11,18 @@ import {
   captureException,
   logBreadcrumb,
 } from '@codesandbox/common/lib/utils/analytics/sentry';
-import { hasPermission } from '@codesandbox/common/lib/utils/permission';
 import slugify from '@codesandbox/common/lib/utils/slugify';
-import {
-  editorUrl,
-  sandboxUrl,
-} from '@codesandbox/common/lib/utils/url-generator';
 import { Action, AsyncAction } from 'app/overmind';
 import { sortObjectByKeys } from 'app/overmind/utils/common';
 import { getTemplate as computeTemplate } from 'codesandbox-import-utils/lib/create-sandbox/templates';
 import { mapValues } from 'lodash-es';
 
-import { CurrentSandbox } from './models/CurrentSandbox';
-
-export const ensureSandboxId: Action<string, string> = ({ state }, id) => {
-  if (state.editor.sandboxes[id]) {
-    return id;
-  }
-
-  const { sandboxes } = state.editor;
-  const matchingSandboxId = Object.keys(sandboxes).find(
-    // @ts-ignore
-    idItem => sandboxUrl(sandboxes[idItem]) === `${editorUrl()}${id}`
-  );
-
-  return matchingSandboxId || id;
-};
-
 export const initializeLiveSandbox: AsyncAction = async ({
   state,
   actions,
 }) => {
-  state.live.isTeam = Boolean(state.editor.currentSandbox.getTeam());
+  const sandbox = state.editor.sandbox;
+  state.live.isTeam = Boolean(sandbox.team);
 
   if (state.live.isLive && state.live.roomInfo) {
     const roomChanged = state.live.roomInfo.roomId !== sandbox.roomId;
@@ -64,19 +44,11 @@ export const setModuleSavedCode: Action<{
   moduleShortid: string;
   savedCode: string | null;
 }> = ({ state }, { moduleShortid, savedCode }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
-  if (!sandbox) {
-    return;
-  }
+  const module = sandbox.getModule(moduleShortid);
 
-  const moduleIndex = sandbox.modules.findIndex(
-    m => m.shortid === moduleShortid
-  );
-
-  if (moduleIndex > -1) {
-    const module = state.editor.sandboxes[sandbox.id].modules[moduleIndex];
-
+  if (module) {
     if (savedCode === undefined) {
       logBreadcrumb({
         type: 'error',
@@ -96,13 +68,13 @@ export const saveCode: AsyncAction<{
 }> = async ({ state, effects, actions }, { code, moduleShortid, cbID }) => {
   effects.analytics.track('Save Code');
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   if (!sandbox) {
     return;
   }
 
-  const module = sandbox.modules.find(m => m.shortid === moduleShortid);
+  const module = sandbox.getModule(moduleShortid);
 
   if (!module) {
     return;
@@ -154,7 +126,7 @@ export const saveCode: AsyncAction<{
       !effects.executor.isServer() ||
       state.server.containerStatus === ServerContainerStatus.SANDBOX_STARTED
     ) {
-      effects.executor.updateFiles(sandbox);
+      effects.executor.updateFiles(sandbox.get());
     }
 
     if (state.live.isLive && state.live.isCurrentEditor) {
@@ -189,22 +161,17 @@ export const updateCurrentTemplate: AsyncAction = async ({
   effects,
   state,
 }) => {
-  if (!state.editor.currentSandbox) {
-    return;
-  }
-
   try {
-    const currentTemplate = state.editor.currentSandbox.template;
-    const templateDefinition = getTemplateDefinition(currentTemplate);
-
+    const template = state.editor.sandbox.templateDefinition;
+    const parsedConfigurations = state.editor.sandbox.parsedConfigurations;
     // We always want to be able to update server template based on its detection.
     // We only want to update the client template when it's explicitly specified
     // in the sandbox configuration.
     if (
-      templateDefinition.isServer ||
-      state.editor.parsedConfigurations?.sandbox?.parsed?.template
+      (template && template.isServer) ||
+      parsedConfigurations.sandbox?.parsed?.template
     ) {
-      const { parsed = {} } = state.editor.parsedConfigurations?.package || {};
+      const { parsed = {} } = parsedConfigurations?.package || {};
 
       const modulesByPath = mapValues(state.editor.modulesByPath, module => ({
         // No idea why this typing fails!
@@ -220,15 +187,11 @@ export const updateCurrentTemplate: AsyncAction = async ({
         'node') as TemplateType;
 
       if (
-        newTemplate !== currentTemplate &&
-        templateDefinition.isServer ===
-          getTemplateDefinition(newTemplate).isServer
+        newTemplate !== template.name &&
+        template.isServer === getTemplateDefinition(newTemplate).isServer
       ) {
-        state.editor.currentSandbox.template = newTemplate;
-        await effects.api.saveTemplate(
-          state.editor.currentSandbox.id,
-          newTemplate
-        );
+        state.editor.sandbox.setTemplate(newTemplate);
+        await effects.api.saveTemplate(state.editor.sandbox.id, newTemplate);
       }
     }
   } catch (e) {
@@ -244,19 +207,19 @@ export const removeNpmDependencyFromPackageJson: AsyncAction<string> = async (
   name
 ) => {
   if (
-    !state.editor.currentPackageJSONCode ||
-    !state.editor.currentPackageJSON
+    !state.editor.sandbox.packageJsonCode ||
+    !state.editor.sandbox.packageJson
   ) {
     return;
   }
 
-  const packageJson = JSON.parse(state.editor.currentPackageJSONCode);
+  const packageJson = JSON.parse(state.editor.sandbox.packageJsonCode);
 
   delete packageJson.dependencies[name];
 
   await actions.editor.codeSaved({
     code: JSON.stringify(packageJson, null, 2),
-    moduleShortid: state.editor.currentPackageJSON.shortid,
+    moduleShortid: state.editor.sandbox.packageJson.shortid,
     cbID: null,
   });
 };
@@ -267,13 +230,13 @@ export const addNpmDependencyToPackageJson: AsyncAction<{
   isDev: boolean;
 }> = async ({ state, actions }, { name, isDev, version }) => {
   if (
-    !state.editor.currentPackageJSONCode ||
-    !state.editor.currentPackageJSON
+    !state.editor.sandbox.packageJsonCode ||
+    !state.editor.sandbox.packageJson
   ) {
     return;
   }
 
-  const packageJson = JSON.parse(state.editor.currentPackageJSONCode);
+  const packageJson = JSON.parse(state.editor.sandbox.packageJsonCode);
 
   const type = isDev ? 'devDependencies' : 'dependencies';
 
@@ -283,7 +246,7 @@ export const addNpmDependencyToPackageJson: AsyncAction<{
 
   await actions.editor.codeSaved({
     code: JSON.stringify(packageJson, null, 2),
-    moduleShortid: state.editor.currentPackageJSON.shortid,
+    moduleShortid: state.editor.sandbox.packageJson.shortid,
     cbID: null,
   });
 };
@@ -292,7 +255,7 @@ export const setModuleCode: Action<{
   module: Module;
   code: string;
 }> = ({ state, effects }, { module, code }) => {
-  const { currentSandbox } = state.editor;
+  const { sandbox: currentSandbox } = state.editor;
 
   if (!currentSandbox) {
     return;
@@ -331,17 +294,10 @@ export const forkSandbox: AsyncAction<{
   { state, effects, actions },
   { sandboxId: id, body, openInNewWindow = false }
 ) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
+  const template = sandbox.templateDefinition;
 
-  if (!sandbox) {
-    return;
-  }
-
-  const templateDefinition = getTemplateDefinition(
-    sandbox ? sandbox.template : null
-  );
-
-  if (!state.isLoggedIn && templateDefinition.isServer) {
+  if (!state.isLoggedIn && template.isServer) {
     effects.analytics.track('Show Server Fork Sign In Modal');
     actions.modalOpened({ modal: 'forkServerModal' });
 
@@ -358,10 +314,7 @@ export const forkSandbox: AsyncAction<{
     // Copy over any unsaved code
     Object.assign(forkedSandbox, {
       modules: forkedSandbox.modules.map(module => {
-        const foundEquivalentModule = sandbox.modules.find(
-          currentSandboxModule =>
-            currentSandboxModule.shortid === module.shortid
-        );
+        const foundEquivalentModule = sandbox.getModule(module.shortid);
 
         if (!foundEquivalentModule) {
           return module;
@@ -378,13 +331,13 @@ export const forkSandbox: AsyncAction<{
     state.workspace.project.description = forkedSandbox.description || '';
     state.workspace.project.alias = forkedSandbox.alias || '';
 
-    Object.assign(state.editor.sandboxes[sandbox.id], forkedSandbox);
+    state.editor.sandbox.set(forkedSandbox);
     state.editor.modulesByPath = effects.vscode.sandboxFsSync.create(
       forkedSandbox
     );
     effects.preview.updateAddressbarUrl();
 
-    if (templateDefinition.isServer) {
+    if (template.isServer) {
       effects.preview.refresh();
       actions.server.startContainer(forkedSandbox);
     }
@@ -395,7 +348,7 @@ export const forkSandbox: AsyncAction<{
 
     effects.notificationToast.success('Forked sandbox!');
 
-    if (templateDefinition.isServer) {
+    if (template.isServer) {
       actions.editor.showEnvironmentVariablesNotification();
     }
 
@@ -436,38 +389,38 @@ export const setCurrentModule: AsyncAction<Module> = async (
     }
   }
 
-  state.editor.currentModuleShortid = module.shortid;
+  state.editor.sandbox.setCurrentModule(module);
   await effects.vscode.openModule(module);
-  effects.vscode.setErrors(state.editor.errors);
-  effects.vscode.setCorrections(state.editor.corrections);
+  effects.vscode.setErrors(state.editor.sandbox.errors);
+  effects.vscode.setCorrections(state.editor.sandbox.corrections);
 };
 
 export const updateSandboxPackageJson: AsyncAction = async ({
   state,
   actions,
 }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
-  if (
-    !sandbox ||
-    !state.editor.parsedConfigurations?.package?.parsed ||
-    !state.editor.currentPackageJSON
-  ) {
+  if (!sandbox.parsedConfigurations.package?.parsed || !sandbox.packageJson) {
     return;
   }
 
-  if (!hasPermission(sandbox.authorization, 'write_code')) {
+  if (!sandbox.hasPermission('write_code')) {
     return;
   }
 
-  const { parsed } = state.editor.parsedConfigurations.package;
+  const { parsed } = sandbox.parsedConfigurations.package;
 
   parsed.keywords = sandbox.tags;
   parsed.name = slugify(sandbox.title || sandbox.id);
   parsed.description = sandbox.description;
 
   const code = JSON.stringify(parsed, null, 2);
-  const moduleShortid = state.editor.currentPackageJSON.shortid;
+  const moduleShortid = state.editor.sandbox.packageJson?.shortid;
+
+  if (!moduleShortid) {
+    return;
+  }
 
   await actions.editor.codeSaved({
     code,
@@ -479,11 +432,7 @@ export const updateSandboxPackageJson: AsyncAction = async ({
 export const updateDevtools: AsyncAction<{
   code: string;
 }> = async ({ state, actions }, { code }) => {
-  if (!state.editor.currentSandbox) {
-    return;
-  }
-
-  if (state.editor.currentSandbox.owned) {
+  if (state.editor.sandbox.owned) {
     const devtoolsModule =
       state.editor.modulesByPath['/.codesandbox/workspace.json'];
 

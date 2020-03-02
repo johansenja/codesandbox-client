@@ -1,13 +1,13 @@
-import React, { FunctionComponent } from 'react';
-import { useOvermind } from 'app/overmind';
-
 import {
-  Collapsible,
-  Text,
-  SidebarRow,
-  List,
   Button,
+  Collapsible,
+  List,
+  SidebarRow,
+  Text,
 } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
+
 import { Dependency } from './Dependency';
 
 export const Dependencies: FunctionComponent = () => {
@@ -17,7 +17,9 @@ export const Dependencies: FunctionComponent = () => {
       editor: { addNpmDependency, npmDependencyRemoved },
     },
     state: {
-      editor: { parsedConfigurations },
+      editor: {
+        sandbox: { parsedConfigurations },
+      },
     },
   } = useOvermind();
 

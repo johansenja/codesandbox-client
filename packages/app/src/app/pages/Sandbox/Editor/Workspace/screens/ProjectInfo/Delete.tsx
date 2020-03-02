@@ -1,9 +1,10 @@
-import React, { MouseEvent } from 'react';
 import VERSION from '@codesandbox/common/lib/version';
-import { useOvermind } from 'app/overmind';
+import { Button, Element, Link, Stack, Text } from '@codesandbox/components';
 import css from '@styled-system/css';
-import { Button, Stack, Text, Element, Link } from '@codesandbox/components';
-import { SpectrumLogo, GithubIcon, TwitterIcon } from './icons';
+import { useOvermind } from 'app/overmind';
+import React, { MouseEvent } from 'react';
+
+import { GithubIcon, SpectrumLogo, TwitterIcon } from './icons';
 
 const links = [
   { href: 'https://twitter.com/codesandbox', icon: <TwitterIcon /> },
@@ -21,16 +22,16 @@ export const Delete = () => {
       workspace: { deleteTemplate },
     },
     state: {
-      editor: {
-        currentSandbox: { customTemplate },
-      },
+      editor: { sandbox },
     },
   } = useOvermind();
+
+  const customTemplate = sandbox.customTemplate;
 
   const onDelete = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
-    if (customTemplate) {
+    if (sandbox.customTemplate) {
       deleteTemplate();
     } else {
       modalOpened({ modal: 'deleteSandbox' });

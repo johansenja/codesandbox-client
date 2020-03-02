@@ -1,6 +1,5 @@
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { Button } from './elements';
 
@@ -11,7 +10,7 @@ export const PickButton: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { description, id, owned, title },
+        sandbox: { description, id, owned, title },
       },
     },
   } = useOvermind();

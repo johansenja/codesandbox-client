@@ -1,7 +1,6 @@
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
-import React, { FunctionComponent } from 'react';
-
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 import { Item, TeamIcon } from './elements';
 
@@ -9,7 +8,7 @@ export const Team: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: {
+        sandbox: {
           team: { name },
         },
       },

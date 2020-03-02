@@ -144,7 +144,7 @@ const Modals: React.FC = () => {
   const {
     actions,
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
       preferences: {
         settings: { customVSCodeTheme },
       },
@@ -187,7 +187,7 @@ const Modals: React.FC = () => {
   return (
     <ThemeProvider
       theme={{
-        templateColor: templateColor(sandbox, templateDef),
+        templateColor: templateColor(sandbox.get(), templateDef),
         templateBackgroundColor: templateDef && templateDef.backgroundColor,
         ...state.theme,
       }}

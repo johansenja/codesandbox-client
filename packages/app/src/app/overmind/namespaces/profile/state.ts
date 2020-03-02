@@ -54,7 +54,7 @@ export const state: State = {
       : null,
   showcasedSandbox: (currentState, rootState) =>
     currentState.current && currentState.current.showcasedSandboxShortid
-      ? rootState.editor.sandboxes[currentState.current.showcasedSandboxShortid]
+      ? rootState.editor.sandbox.get()
       : null,
   currentLikedSandboxes: currentState =>
     currentState.current

@@ -1,17 +1,16 @@
-import React from 'react';
-import { useOvermind } from 'app/overmind';
-
-import { UserMenu } from 'app/pages/common/UserMenu';
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
-
-import { Stack, Avatar, Button } from '@codesandbox/components';
+import { Avatar, Button, Stack } from '@codesandbox/components';
 import css from '@styled-system/css';
+import { useOvermind } from 'app/overmind';
+import { UserMenu } from 'app/pages/common/UserMenu';
+import React from 'react';
+
 import {
-  ReloadIcon,
-  PreferenceIcon,
-  LikeIcon,
   EmbedIcon,
   ForkIcon,
+  LikeIcon,
+  PreferenceIcon,
+  ReloadIcon,
 } from './icons';
 
 const TooltipButton = ({ tooltip, ...props }) => (
@@ -32,7 +31,7 @@ export const Actions = () => {
       updateStatus,
       user,
       editor: {
-        currentSandbox: { id, owned, title, description, likeCount, userLiked },
+        sandbox: { id, owned, title, description, likeCount, userLiked },
       },
     },
 
@@ -73,7 +72,7 @@ export const Actions = () => {
         <TooltipButton
           tooltip={userLiked ? 'Undo like sandbox' : 'Like sandbox'}
           variant="link"
-          onClick={() => likeSandboxToggled(id)}
+          onClick={() => likeSandboxToggled()}
         >
           <LikeIcon
             css={css({

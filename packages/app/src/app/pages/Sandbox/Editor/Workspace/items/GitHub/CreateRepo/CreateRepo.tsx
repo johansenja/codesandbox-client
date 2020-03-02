@@ -2,13 +2,12 @@ import { Button } from '@codesandbox/common/lib/components/Button';
 import Input from '@codesandbox/common/lib/components/Input';
 import Margin from '@codesandbox/common/lib/components/spacing/Margin';
 import track from '@codesandbox/common/lib/utils/analytics';
-import React, { ChangeEvent, FunctionComponent, HTMLAttributes } from 'react';
-
 import { useOvermind } from 'app/overmind';
 import {
-  WorkspaceSubtitle,
   WorkspaceInputContainer,
+  WorkspaceSubtitle,
 } from 'app/pages/Sandbox/Editor/Workspace/elements';
+import React, { ChangeEvent, FunctionComponent, HTMLAttributes } from 'react';
 
 import { Error } from './elements';
 
@@ -19,7 +18,9 @@ export const CreateRepo: FunctionComponent<Props> = ({ style }) => {
       git: { createRepoClicked, repoTitleChanged },
     },
     state: {
-      editor: { isAllModulesSynced },
+      editor: {
+        sandbox: { isAllModulesSynced },
+      },
       git: { error, repoTitle },
     },
   } = useOvermind();

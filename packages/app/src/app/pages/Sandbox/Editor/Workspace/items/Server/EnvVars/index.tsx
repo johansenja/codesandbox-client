@@ -9,7 +9,7 @@ export const EnvironmentVariables: React.FC<{}> = props => {
   const {
     actions: { editor },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
     },
   } = useOvermind();
   useEffect(() => {

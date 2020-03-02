@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
-
 import { GitProgress } from 'app/components/GitProgress';
 import { useOvermind } from 'app/overmind';
+import React, { FunctionComponent } from 'react';
 
 const CommitModal: FunctionComponent = () => {
   const {
     state: {
       editor: {
-        currentSandbox: { originalGit: git },
+        sandbox: { originalGit: git },
       },
       git: { commit },
       user: { username },

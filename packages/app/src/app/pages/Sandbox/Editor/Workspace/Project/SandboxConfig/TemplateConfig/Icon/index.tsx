@@ -1,13 +1,11 @@
 import * as templates from '@codesandbox/common/lib/templates';
 import getIcon from '@codesandbox/common/lib/templates/icons';
 import { ColorIcons as Icons } from '@codesandbox/template-icons';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useState } from 'react';
 import { PopoverArrow as Arrow, usePopoverState } from 'reakit/Popover';
 
-import { useOvermind } from 'app/overmind';
-
 import { Item, PropertyName } from '../../../elements';
-
 import { Button, IconButton, IconWrapper, List, Value } from './elements';
 
 export const Icon: FunctionComponent = () => {
@@ -17,7 +15,7 @@ export const Icon: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { customTemplate, template },
+        sandbox: { customTemplate, template },
       },
     },
   } = useOvermind();

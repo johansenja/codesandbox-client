@@ -59,7 +59,7 @@ export const roomJoined: AsyncAction<{
   });
 
   effects.live.sendModuleStateSyncRequest();
-  effects.vscode.openModule(state.editor.currentModule);
+  effects.vscode.openModule(state.editor.sandbox.currentModule);
   effects.preview.executeCodeImmediately({ initialRender: true });
   state.editor.isLoading = false;
 });
@@ -72,7 +72,7 @@ export const createLiveClicked: AsyncAction<string> = async (
 
   const roomId = await effects.api.createLiveRoom(sandboxId);
   const sandbox = await actions.live.internal.initialize(roomId);
-  const currentSandbox = state.editor.currentSandbox;
+  const currentSandbox = state.editor.sandbox;
 
   if (!sandbox || !currentSandbox) {
     effects.notificationToast.error('Unable to create live room');
@@ -91,7 +91,7 @@ export const createLiveClicked: AsyncAction<string> = async (
     }),
   });
 
-  Object.assign(state.editor.sandboxes[sandboxId], sandbox);
+  state.editor.sandbox.set(sandbox);
   state.editor.modulesByPath = effects.vscode.sandboxFsSync.create(sandbox);
 
   effects.live.sendModuleStateSyncRequest();
@@ -153,7 +153,7 @@ export const sendCurrentSelection: Action = ({ state, effects }) => {
     const { liveUserId } = state.live;
     if (liveUserId) {
       effects.live.sendUserSelection(
-        state.editor.currentModuleShortid,
+        state.editor.sandbox.currentModule.shortid,
         liveUserId,
         state.live.currentSelection
       );
@@ -171,7 +171,7 @@ export const onSelectionChanged: Action<any> = (
 
   if (state.live.isCurrentEditor) {
     const { liveUserId } = state.live;
-    const moduleShortid = state.editor.currentModuleShortid;
+    const moduleShortid = state.editor.sandbox.currentModule.shortid;
     if (!moduleShortid || !liveUserId) {
       return;
     }
@@ -278,8 +278,8 @@ export const onFollow: Action<{
 
   const user = state.live.roomInfo.users.find(u => u.id === liveUserId);
 
-  if (user!.currentModuleShortid && state.editor.currentSandbox) {
-    const { modules } = state.editor.currentSandbox;
+  if (user!.currentModuleShortid && state.editor.sandbox) {
+    const { modules } = state.editor.sandbox;
     const module = modules.filter(
       ({ shortid }) => shortid === user!.currentModuleShortid
     )[0];

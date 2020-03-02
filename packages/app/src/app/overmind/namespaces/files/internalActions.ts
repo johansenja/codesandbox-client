@@ -6,7 +6,7 @@ import denormalize from 'codesandbox-import-utils/lib/utils/files/denormalize';
 import { chunk } from 'lodash-es';
 
 export const recoverFiles: Action = ({ effects, actions, state }) => {
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
 
   if (!sandbox) {
     return;

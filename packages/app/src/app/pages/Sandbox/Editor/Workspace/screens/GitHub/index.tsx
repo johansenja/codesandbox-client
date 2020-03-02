@@ -1,13 +1,14 @@
-import React, { useEffect } from 'react';
-import { Collapsible, Text, Element, Stack } from '@codesandbox/components';
+import { Collapsible, Element, Stack, Text } from '@codesandbox/components';
 import { useOvermind } from 'app/overmind';
-import { GitHubIcon } from './Icons';
-import { CommitForm } from './CommitForm';
+import React, { useEffect } from 'react';
+
 import { Changes } from './Changes';
+import { CommitForm } from './CommitForm';
 import { CreateRepo } from './CreateRepo';
 import { GithubLogin } from './GithubLogin';
-import { NotOwner } from './NotOwner';
+import { GitHubIcon } from './Icons';
 import { NotLoggedIn } from './NotLoggedIn';
+import { NotOwner } from './NotOwner';
 
 export const GitHub = () => {
   const {
@@ -17,7 +18,7 @@ export const GitHub = () => {
     state: {
       git: { isFetching, originalGitChanges: gitChanges },
       editor: {
-        currentSandbox: { originalGit, owned },
+        sandbox: { originalGit, owned },
       },
       isLoggedIn,
       user,

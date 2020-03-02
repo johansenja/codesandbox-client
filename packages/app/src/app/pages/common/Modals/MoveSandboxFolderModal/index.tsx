@@ -1,11 +1,10 @@
-import track from '@codesandbox/common/lib/utils/analytics';
 import { basename } from 'path';
+
+import track from '@codesandbox/common/lib/utils/analytics';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { addSandboxesToFolder } from '../../../Dashboard/queries';
-
 import { DirectoryPicker } from './DirectoryPicker';
 import {
   Block,
@@ -20,7 +19,7 @@ export const MoveSandboxFolderModal: FunctionComponent = () => {
     actions: { modalClosed, refetchSandboxInfo },
     state: {
       editor: {
-        currentSandbox: { collection, id, team },
+        sandbox: { collection, id, team },
       },
     },
   } = useOvermind();

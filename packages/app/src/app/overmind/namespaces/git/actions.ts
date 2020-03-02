@@ -13,7 +13,7 @@ export const repoTitleChanged: Action<{
 
 export const createRepoClicked: AsyncAction = async ({ state, effects }) => {
   const { repoTitle } = state.git;
-  const modulesNotSaved = !state.editor.isAllModulesSynced;
+  const modulesNotSaved = !state.editor.sandbox.isAllModulesSynced;
 
   if (!repoTitle) {
     state.git.error = 'Repo name cannot be empty';
@@ -33,12 +33,12 @@ export const createRepoClicked: AsyncAction = async ({ state, effects }) => {
   state.git.isExported = false;
   state.currentModal = 'exportGithub';
 
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }
 
-  const githubData = await effects.git.export(sandbox);
+  const githubData = await effects.git.export(sandbox.get());
   if (!githubData) {
     return;
   }
@@ -64,7 +64,7 @@ export const gitMounted: AsyncAction = ({ actions }) =>
 
 export const createCommitClicked: AsyncAction = async ({ state, effects }) => {
   const { git } = state;
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }
@@ -108,7 +108,7 @@ export const createPrClicked: AsyncAction = async ({ state, effects }) => {
   state.git.isCreatingPr = true;
   state.git.pr = null;
   state.currentModal = 'pr';
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   if (!sandbox) {
     return;
   }

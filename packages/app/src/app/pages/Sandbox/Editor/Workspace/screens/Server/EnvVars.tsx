@@ -1,14 +1,14 @@
-import { useOvermind } from 'app/overmind';
-import React, { useEffect, useState } from 'react';
-
 import {
   Collapsible,
-  Text,
   Element,
   List,
   ListItem,
   Stack,
+  Text,
 } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
+import React, { useEffect, useState } from 'react';
+
 import { DeleteIcon, EditIcon } from './Icons';
 import { VarForm } from './VarForm';
 
@@ -17,7 +17,7 @@ export const EnvVars = () => {
   const {
     actions: { editor },
     state: {
-      editor: { currentSandbox },
+      editor: { sandbox },
     },
   } = useOvermind();
 
@@ -28,7 +28,7 @@ export const EnvVars = () => {
   const deleteEnv = (name: string) => {
     editor.deleteEnvironmentVariable({ name });
   };
-  const envVars = currentSandbox.environmentVariables;
+  const envVars = sandbox.environmentVariables;
 
   return (
     <Collapsible title="Secret Keys" defaultOpen>

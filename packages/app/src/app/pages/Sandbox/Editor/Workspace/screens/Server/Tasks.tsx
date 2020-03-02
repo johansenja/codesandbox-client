@@ -1,12 +1,11 @@
-import React from 'react';
-import { dispatch } from 'codesandbox-api';
-
-import BuildIcon from 'react-icons/lib/fa/wrench';
-import FlaskIcon from 'react-icons/lib/fa/flask';
-import DownloadIcon from 'react-icons/lib/fa/download';
-import NodeIcon from 'react-icons/lib/io/social-nodejs';
+import { Collapsible, List, ListAction, Text } from '@codesandbox/components';
 import { useOvermind } from 'app/overmind';
-import { List, ListAction, Text, Collapsible } from '@codesandbox/components';
+import { dispatch } from 'codesandbox-api';
+import React from 'react';
+import DownloadIcon from 'react-icons/lib/fa/download';
+import FlaskIcon from 'react-icons/lib/fa/flask';
+import BuildIcon from 'react-icons/lib/fa/wrench';
+import NodeIcon from 'react-icons/lib/io/social-nodejs';
 
 // These scripts are only supposed to run on the main thread.
 const blacklistedScripts = ['dev', 'develop', 'serve', 'start'];
@@ -29,7 +28,7 @@ const getIcon = (scriptName: string) => {
 export const Tasks = () => {
   const {
     state: {
-      editor: { parsedConfigurations: pkg },
+      editor: { sandbox },
     },
   } = useOvermind();
 
@@ -39,11 +38,11 @@ export const Tasks = () => {
       script: task,
     });
   };
-  if (!pkg?.scripts) {
+  if (!sandbox.parsedConfigurations?.scripts) {
     return null;
   }
 
-  const commands = Object.keys(pkg.scripts).filter(
+  const commands = Object.keys(sandbox.parsedConfigurations.scripts).filter(
     x => !blacklistedScripts.includes(x)
   );
 

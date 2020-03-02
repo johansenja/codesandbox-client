@@ -1,11 +1,9 @@
 import { Button } from '@codesandbox/common/lib/components/Button';
 import Row from '@codesandbox/common/lib/components/flex/Row';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
 import { Heading } from '../elements';
-
 import { Container, Explanation } from './elements';
 
 export const LiveSessionEnded: FunctionComponent = () => {
@@ -17,7 +15,7 @@ export const LiveSessionEnded: FunctionComponent = () => {
     state: {
       currentModalMessage,
       editor: {
-        currentSandbox: { owned },
+        sandbox: { owned },
       },
     },
   } = useOvermind();

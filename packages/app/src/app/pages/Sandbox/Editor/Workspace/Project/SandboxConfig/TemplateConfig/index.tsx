@@ -1,15 +1,12 @@
 import * as templates from '@codesandbox/common/lib/templates';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useRef, useState } from 'react';
 import { SketchPicker } from 'react-color';
 import { Link } from 'react-router-dom';
 import { useClickAway } from 'react-use';
 
-import { useOvermind } from 'app/overmind';
-
 import { WorkspaceItem } from '../../../WorkspaceItem';
-
 import { PropertyName, PropertyValue } from '../../elements';
-
 import { Explanation, Item, PickColor, PickerContainer } from './elements';
 import { Icon } from './Icon';
 
@@ -20,7 +17,7 @@ export const TemplateConfig: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { customTemplate, template },
+        sandbox: { customTemplate, template },
       },
     },
   } = useOvermind();

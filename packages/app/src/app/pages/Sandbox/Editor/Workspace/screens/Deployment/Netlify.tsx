@@ -1,20 +1,19 @@
-import React, { useEffect } from 'react';
 import getTemplate from '@codesandbox/common/lib/templates';
 import track from '@codesandbox/common/lib/utils/analytics';
-import { useOvermind } from 'app/overmind';
-
 import {
+  Button,
   Element,
-  ListAction,
-  Text,
+  Integration,
   Link,
   List,
+  ListAction,
   ListItem,
-  Button,
-  Integration,
+  Text,
 } from '@codesandbox/components';
+import { useOvermind } from 'app/overmind';
+import React, { useEffect } from 'react';
 
-import { NetlifyIcon, FileIcon, VisitIcon, FlagIcon } from './icons';
+import { FileIcon, FlagIcon, NetlifyIcon, VisitIcon } from './icons';
 
 export const Netlify = () => {
   const {
@@ -30,7 +29,7 @@ export const Netlify = () => {
         netlifyLogs,
         netlifyClaimUrl,
       },
-      editor: { currentSandbox },
+      editor: { sandbox: currentSandbox },
     },
   } = useOvermind();
 

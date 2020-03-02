@@ -17,7 +17,7 @@ const ModalContent: React.FC = () => {
   const {
     state: {
       editor: {
-        currentSandbox: { customTemplate },
+        sandbox: { customTemplate },
       },
     },
     actions: { modals: modalsActions },

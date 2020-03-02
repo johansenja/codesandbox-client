@@ -1,10 +1,8 @@
 import getTemplateDefinition from '@codesandbox/common/lib/templates';
+import { useOvermind } from 'app/overmind';
 import React, { FunctionComponent, useEffect } from 'react';
 
-import { useOvermind } from 'app/overmind';
-
-import { Container, Heading, Explanation } from '../elements';
-
+import { Container, Explanation, Heading } from '../elements';
 import { NiceName as NiceNameBase, SignInButton } from './elements';
 
 export const ForkServerModal: FunctionComponent = () => {
@@ -15,7 +13,7 @@ export const ForkServerModal: FunctionComponent = () => {
     },
     state: {
       editor: {
-        currentSandbox: { template },
+        sandbox: { template },
       },
       isLoggedIn,
     },

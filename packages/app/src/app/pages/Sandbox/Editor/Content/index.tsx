@@ -57,14 +57,13 @@ export const MainWorkspace: React.FC = () => {
     };
   }, [actions.editor, effects.vscode, reaction, updateEditorSize]);
 
-  const { currentModule } = state.editor;
-  const sandbox = state.editor.currentSandbox;
+  const sandbox = state.editor.sandbox;
   const { preferences } = state;
   const windowVisible = state.editor.previewWindowVisible;
   const template = getTemplateDefinition(sandbox.template);
   const views = state.editor.devToolTabs;
   const currentPosition = state.editor.currentDevToolsPosition;
-  const modulePath = currentModule.path;
+  const modulePath = sandbox.currentModule.path;
   const config = template.configurationFiles[modulePath];
 
   const browserConfig = {
