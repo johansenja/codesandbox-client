@@ -322,9 +322,9 @@ export type Sandbox = {
   featureFlags: {
     [key: string]: boolean;
   };
-  collection?: {
+  collection: {
     path: string;
-  };
+  } | null;
   owned: boolean;
   authorization: PermissionType;
   npmDependencies: {
