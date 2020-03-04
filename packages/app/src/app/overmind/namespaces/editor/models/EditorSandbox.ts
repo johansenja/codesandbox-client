@@ -26,7 +26,12 @@ import { parseConfigurations } from 'app/overmind/utils/parse-configurations';
 import { json } from 'overmind';
 
 export class EditorSandbox {
-  private currentSandbox: Sandbox = {} as Sandbox;
+  private currentSandbox: Sandbox = {
+    id: null,
+    title: 'New',
+    owned: false,
+  } as Sandbox;
+
   private currentModuleShortid: string | null = null;
   private changedModuleShortids: string[] = [];
   public errors: ModuleError[];

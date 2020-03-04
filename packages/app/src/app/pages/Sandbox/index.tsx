@@ -61,7 +61,6 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
 
     if (state.editor.error) {
       const isGithub = match.params.id.includes('github');
-
       return (
         <>
           <div

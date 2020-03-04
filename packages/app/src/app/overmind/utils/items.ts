@@ -65,9 +65,9 @@ export const SERVER: INavigationItem = {
 };
 
 export function getDisabledItems(store: any): INavigationItem[] {
-  const { currentSandbox } = store.editor;
+  const { sandbox } = store.editor;
 
-  if (!currentSandbox.owned || !store.isLoggedIn) {
+  if (!sandbox.owned || !store.isLoggedIn) {
     return [GITHUB, DEPLOYMENT, LIVE];
   }
 
@@ -77,7 +77,7 @@ export function getDisabledItems(store: any): INavigationItem[] {
 export default function getItems(store: any): INavigationItem[] {
   if (
     store.live.isLive &&
-    !store.editor.currentSandbox.git &&
+    !store.editor.sandbox.git &&
     !(
       store.live.isOwner ||
       (store.user &&
@@ -89,27 +89,27 @@ export default function getItems(store: any): INavigationItem[] {
     return [FILES, LIVE];
   }
 
-  const { currentSandbox } = store.editor;
+  const { sandbox } = store.editor;
 
-  if (!currentSandbox.owned) {
+  if (!sandbox.owned) {
     return [PROJECT_SUMMARY, CONFIGURATION];
   }
 
-  const isCustomTemplate = !!currentSandbox.customTemplate;
+  const isCustomTemplate = !!sandbox.customTemplate;
   const items = [
     isCustomTemplate ? PROJECT_TEMPLATE : PROJECT,
     FILES,
     CONFIGURATION,
   ];
 
-  if (store.isLoggedIn && currentSandbox) {
-    const templateDef = getTemplate(currentSandbox.template);
+  if (store.isLoggedIn && sandbox) {
+    const templateDef = getTemplate(sandbox.template);
     if (templateDef.isServer) {
       items.push(SERVER);
     }
   }
 
-  if (store.isLoggedIn && currentSandbox && !currentSandbox.git) {
+  if (store.isLoggedIn && sandbox && !sandbox.git) {
     items.push(GITHUB);
   }
 
@@ -119,8 +119,8 @@ export default function getItems(store: any): INavigationItem[] {
 
   if (
     store.isLoggedIn &&
-    currentSandbox &&
-    hasPermission(currentSandbox.authorization, 'write_code')
+    sandbox &&
+    hasPermission(sandbox.authorization, 'write_code')
   ) {
     items.push(LIVE);
   }
