@@ -642,7 +642,9 @@ export const moduleDeleted: AsyncAction<{
     }
 
     const removedModule = sandbox.removeModule(module);
-    const wasCurrentModule = sandbox.currentModule.shortid === moduleShortid;
+    const wasCurrentModule = sandbox.currentModule
+      ? sandbox.currentModule.shortid === moduleShortid
+      : false;
 
     effects.vscode.sandboxFsSync.unlink(
       state.editor.modulesByPath,

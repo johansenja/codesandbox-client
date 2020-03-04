@@ -187,6 +187,7 @@ export const updateCurrentTemplate: AsyncAction = async ({
         'node') as TemplateType;
 
       if (
+        template &&
         newTemplate !== template.name &&
         template.isServer === getTemplateDefinition(newTemplate).isServer
       ) {
@@ -297,7 +298,7 @@ export const forkSandbox: AsyncAction<{
   const sandbox = state.editor.sandbox;
   const template = sandbox.templateDefinition;
 
-  if (!state.isLoggedIn && template.isServer) {
+  if (!state.isLoggedIn && template?.isServer) {
     effects.analytics.track('Show Server Fork Sign In Modal');
     actions.modalOpened({ modal: 'forkServerModal' });
 
@@ -337,7 +338,7 @@ export const forkSandbox: AsyncAction<{
     );
     effects.preview.updateAddressbarUrl();
 
-    if (template.isServer) {
+    if (template && template.isServer) {
       effects.preview.refresh();
       actions.server.startContainer(forkedSandbox);
     }
@@ -348,7 +349,7 @@ export const forkSandbox: AsyncAction<{
 
     effects.notificationToast.success('Forked sandbox!');
 
-    if (template.isServer) {
+    if (template && template.isServer) {
       actions.editor.showEnvironmentVariablesNotification();
     }
 

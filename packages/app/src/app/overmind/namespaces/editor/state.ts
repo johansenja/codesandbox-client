@@ -91,7 +91,7 @@ export const state: State = {
     return tabs.find(
       tab =>
         'moduleShortid' in tab &&
-        tab.moduleShortid === currentSandbox.currentModule.shortid
+        tab.moduleShortid === currentSandbox.currentModule?.shortid
     );
   },
   /**

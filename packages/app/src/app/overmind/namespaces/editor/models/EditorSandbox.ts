@@ -339,8 +339,8 @@ export class EditorSandbox {
     this.currentSandbox.template = template;
   }
 
-  setTitle(title: string) {
-    this.currentSandbox.title = title;
+  setTitle(title: string | null) {
+    this.currentSandbox.title = title || '';
   }
 
   setDescription(description: string) {
@@ -375,15 +375,15 @@ export class EditorSandbox {
     this.currentSandbox.previewSecret = previewSecret;
   }
 
-  setTeam(team: { id: string; name: string }) {
+  setTeam(team: { id: string; name: string } | null) {
     this.currentSandbox.team = team;
   }
 
-  setRoomId(roomId: string) {
+  setRoomId(roomId: string | null) {
     this.currentSandbox.roomId = roomId;
   }
 
-  setCollection(collection: { path: string }) {
+  setCollection(collection: { path: string } | null) {
     this.currentSandbox.collection = collection;
   }
 

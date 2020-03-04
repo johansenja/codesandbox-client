@@ -17,7 +17,7 @@ export default {
       title,
       () => code,
       _options.getPrettierConfig(),
-      () => _options.getCurrentModule().id === moduleId
+      () => _options.getCurrentModule()?.id === moduleId
     );
   },
 };

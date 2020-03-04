@@ -59,7 +59,9 @@ export const roomJoined: AsyncAction<{
   });
 
   effects.live.sendModuleStateSyncRequest();
-  effects.vscode.openModule(state.editor.sandbox.currentModule);
+  if (state.editor.sandbox.currentModule) {
+    effects.vscode.openModule(state.editor.sandbox.currentModule);
+  }
   effects.preview.executeCodeImmediately({ initialRender: true });
   state.editor.isLoading = false;
 });
@@ -151,7 +153,7 @@ export const sendCurrentSelection: Action = ({ state, effects }) => {
 
   if (state.live.isCurrentEditor) {
     const { liveUserId } = state.live;
-    if (liveUserId) {
+    if (liveUserId && state.editor.sandbox.currentModule) {
       effects.live.sendUserSelection(
         state.editor.sandbox.currentModule.shortid,
         liveUserId,
@@ -171,7 +173,7 @@ export const onSelectionChanged: Action<any> = (
 
   if (state.live.isCurrentEditor) {
     const { liveUserId } = state.live;
-    const moduleShortid = state.editor.sandbox.currentModule.shortid;
+    const moduleShortid = state.editor.sandbox.currentModule?.shortid;
     if (!moduleShortid || !liveUserId) {
       return;
     }

@@ -66,7 +66,9 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
 }>(async ({ state, actions, effects }, { id }) => {
   // This happens when we fork. This can be avoided with state first routing
   if (state.editor.isForkingSandbox && state.editor.sandbox) {
-    effects.vscode.openModule(state.editor.sandbox.currentModule);
+    if (state.editor.sandbox.currentModule) {
+      effects.vscode.openModule(state.editor.sandbox.currentModule);
+    }
 
     await actions.editor.internal.initializeLiveSandbox();
 
@@ -142,7 +144,10 @@ export const sandboxChanged: AsyncAction<{ id: string }> = withLoadApp<{
     await effects.live.sendModuleStateSyncRequest();
   }
 
-  effects.vscode.openModule(sandbox.currentModule);
+  if (sandbox.currentModule) {
+    effects.vscode.openModule(sandbox.currentModule);
+  }
+
   effects.preview.executeCodeImmediately({ initialRender: true });
 
   state.editor.isLoading = false;
@@ -251,7 +256,7 @@ export const codeChanged: Action<{
   });
 
   if (
-    !state.editor.sandbox.templateDefinition.isServer &&
+    !state.editor.sandbox.templateDefinition?.isServer &&
     state.preferences.settings.livePreviewEnabled
   ) {
     actions.editor.internal.updatePreviewCode();
@@ -377,14 +382,12 @@ export const moduleSelected: Action<
   | {
       // Id means it is coming from Explorer
       id: string;
-      path?: undefined;
     }
   | {
       // Path means it is coming from VSCode
-      id?: undefined;
       path: string;
     }
-> = ({ actions, effects, state }, { id, path }) => {
+> = ({ actions, effects, state }, payload) => {
   effects.analytics.track('Open File');
 
   const sandbox = state.editor.sandbox;
@@ -394,11 +397,12 @@ export const moduleSelected: Action<
   }
 
   try {
-    const module = path
-      ? sandbox.getModuleByPath(path)
-      : sandbox.getModuleById(id);
+    const module =
+      'path' in payload
+        ? sandbox.getModuleByPath(payload.path)
+        : sandbox.getModuleById(payload.id);
 
-    if (sandbox.isCurrentModule(module)) {
+    if (!module || sandbox.isCurrentModule(module)) {
       return;
     }
 
@@ -447,7 +451,7 @@ export const moduleDoubleClicked: Action = ({ state, effects }) => {
   const tabs = state.editor.tabs as ModuleTab[];
   const tab = tabs.find(
     tabItem =>
-      tabItem.moduleShortid === state.editor.sandbox.currentModule.shortid
+      tabItem.moduleShortid === state.editor.sandbox.currentModule?.shortid
   );
 
   if (tab) {
@@ -479,7 +483,7 @@ export const prettifyClicked: AsyncAction = async ({
 }) => {
   effects.analytics.track('Prettify Code');
   const module = state.editor.sandbox.currentModule;
-  if (!module.id) {
+  if (!module?.id) {
     return;
   }
   const newCode = await effects.prettyfier.prettify(
@@ -617,7 +621,7 @@ export const showEnvironmentVariablesNotification: AsyncAction = async ({
 
   await actions.editor.fetchEnvironmentVariables();
 
-  const environmentVariables = sandbox.environmentVariables;
+  const environmentVariables = sandbox.environmentVariables || {};
   const emptyVarCount = Object.keys(environmentVariables).filter(
     key => !environmentVariables[key]
   ).length;

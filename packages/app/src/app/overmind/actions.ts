@@ -235,7 +235,7 @@ export const refetchSandboxInfo: AsyncAction = async ({
   sandbox.setCollection(updatedSandbox.collection);
   sandbox.setOwned(updatedSandbox.owned);
   sandbox.setLiked(updatedSandbox.userLiked);
-  sandbox.setTitle(updatedSandbox.title);
+  sandbox.setTitle(updatedSandbox.title || '');
   sandbox.setTeam(updatedSandbox.team);
   sandbox.setRoomId(updatedSandbox.roomId);
 

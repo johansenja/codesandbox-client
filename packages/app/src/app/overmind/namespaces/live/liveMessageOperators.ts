@@ -222,7 +222,7 @@ export const onModuleUpdated: Operator<LiveMessage<{
 export const onModuleDeleted: Operator<LiveMessage<{
   moduleShortid: string;
 }>> = mutate(({ state, effects, actions }, { _isOwnMessage, data }) => {
-  if (_isOwnMessage || !state.editor.sandbox) {
+  if (_isOwnMessage) {
     return;
   }
   const sandbox = state.editor.sandbox;
@@ -233,7 +233,9 @@ export const onModuleDeleted: Operator<LiveMessage<{
     return;
   }
   const moduleIndex = state.editor.sandbox.modules.indexOf(removedModule);
-  const wasCurrentModule = sandbox.currentModule.shortid === data.moduleShortid;
+  const wasCurrentModule = sandbox.currentModule
+    ? sandbox.currentModule.shortid === data.moduleShortid
+    : false;
 
   state.editor.sandbox.modules.splice(moduleIndex, 1);
   effects.vscode.sandboxFsSync.unlink(

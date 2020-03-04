@@ -210,7 +210,7 @@ export const setCurrentSandbox: AsyncAction<Sandbox> = async (
 
   const newTab: ModuleTab = {
     type: TabType.MODULE,
-    moduleShortid: state.editor.sandbox.currentModule.shortid,
+    moduleShortid: state.editor.sandbox.currentModule?.shortid ?? null,
     dirty: true,
   };
 
@@ -260,8 +260,14 @@ export const updateCurrentSandbox: AsyncAction<Sandbox> = async (
     return;
   }
 
-  state.editor.sandbox.setTeam(sandbox.team || null);
-  state.editor.sandbox.setCollection(sandbox.collection);
+  if (sandbox.team) {
+    state.editor.sandbox.setTeam(sandbox.team);
+  }
+
+  if (sandbox.collection) {
+    state.editor.sandbox.setCollection(sandbox.collection);
+  }
+
   state.editor.sandbox.setOwned(sandbox.owned);
   state.editor.sandbox.setLiked(sandbox.userLiked);
   state.editor.sandbox.setTitle(sandbox.title);
@@ -321,15 +327,20 @@ export const ensurePackageJSON: AsyncAction = async ({
 };
 
 export const closeTabByIndex: Action<number> = ({ state }, tabIndex) => {
-  const { currentModule } = state.editor.sandbox;
+  const sandbox = state.editor.sandbox;
   const tabs = state.editor.tabs as ModuleTab[];
-  const isActiveTab = currentModule.shortid === tabs[tabIndex].moduleShortid;
+  const isActiveTab =
+    sandbox.currentModule?.shortid === tabs[tabIndex].moduleShortid;
 
   if (isActiveTab) {
     const newTab = tabIndex > 0 ? tabs[tabIndex - 1] : tabs[tabIndex + 1];
 
-    if (newTab) {
-      currentModule.shortid = newTab.moduleShortid;
+    if (
+      newTab &&
+      newTab.moduleShortid &&
+      sandbox.getModule(newTab.moduleShortid)
+    ) {
+      sandbox.setCurrentModule(sandbox.getModule(newTab.moduleShortid)!);
     }
   }
 
