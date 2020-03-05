@@ -281,6 +281,7 @@ export class EditorSandbox {
   }
 
   shouldDirectoryBeOpen(directoryShortid: string) {
+    console.log('SHOULD IT?');
     const { modules, directories } = this.currentSandbox;
     const currentModuleParents = this.getModuleParents(
       modules,
