@@ -63,8 +63,8 @@ export const MainWorkspace: React.FC<{ theme: any }> = ({ theme }) => {
   const template = sandbox && getTemplateDefinition(sandbox.template);
   const views = state.editor.devToolTabs;
   const currentPosition = state.editor.currentDevToolsPosition;
-  const modulePath = sandbox.currentModule.path;
-  const config = template.configurationFiles[modulePath];
+  const modulePath = sandbox.currentModule?.path;
+  const config = modulePath ? template.configurationFiles[modulePath] : null;
 
   const browserConfig = {
     id: 'codesandbox.browser',

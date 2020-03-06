@@ -89,7 +89,7 @@ export function getDisabledItems(store: any): INavigationItem[] {
 }
 
 export default function getItems(store: any): INavigationItem[] {
-  if (!store.editor.currentSandbox) {
+  if (!store.editor.sandbox.id) {
     return [];
   }
   if (
@@ -101,7 +101,7 @@ export default function getItems(store: any): INavigationItem[] {
         store.live.roomInfo &&
         store.live.roomInfo.ownerIds.indexOf(store.user.id) > -1)
     ) &&
-    !hasPermission(store.editor.currentSandbox.authorization, 'write_project')
+    !store.editor.sandbox.hasPermission('write_project')
   ) {
     return [FILES, LIVE];
   }
@@ -119,8 +119,8 @@ export default function getItems(store: any): INavigationItem[] {
     CONFIGURATION,
   ];
 
-  if (store.isLoggedIn && sandbox) {
-    const templateDef = getTemplate(sandbox.template);
+  if (store.isLoggedIn) {
+    const templateDef = sandbox.templateDefinition;
     if (templateDef.isServer) {
       items.push(SERVER);
     }
@@ -138,11 +138,7 @@ export default function getItems(store: any): INavigationItem[] {
     items.push(DEPLOYMENT);
   }
 
-  if (
-    store.isLoggedIn &&
-    sandbox &&
-    hasPermission(sandbox.authorization, 'write_code')
-  ) {
+  if (store.isLoggedIn && sandbox.hasPermission('write_code')) {
     items.push(LIVE);
   }
 

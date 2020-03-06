@@ -26,13 +26,46 @@ import { parseConfigurations } from 'app/overmind/utils/parse-configurations';
 import { json } from 'overmind';
 
 export class EditorSandbox {
-  private currentSandbox: Sandbox = ({
-    id: null,
-    title: 'New',
-    owned: false,
-    userLiked: false,
+  private currentSandbox: Sandbox = {
+    id: '',
+    alias: null,
+    title: null,
+    description: '',
+    viewCount: 0,
     likeCount: 0,
-  } as unknown) as Sandbox;
+    forkCount: 0,
+    userLiked: false,
+    modules: [],
+    directories: [],
+    featureFlags: {},
+    collection: null,
+    owned: false,
+    authorization: 'none',
+    npmDependencies: {},
+    customTemplate: null,
+    forkedTemplate: null,
+    forkedTemplateSandbox: null,
+    externalResources: [],
+    team: null,
+    roomId: null,
+    privacy: 0,
+    author: null,
+    forkedFromSandbox: null,
+    git: null,
+    tags: [],
+    isFrozen: false,
+    environmentVariables: null,
+    sourceId: '',
+    source: undefined,
+    template: 'custom',
+    entry: '',
+    originalGit: null,
+    originalGitCommitSha: null,
+    originalGitChanges: null,
+    version: 0,
+    screenshotUrl: null,
+    previewSecret: null,
+  };
 
   private currentModuleShortid: string | null = null;
   private changedModuleShortids: string[] = [];

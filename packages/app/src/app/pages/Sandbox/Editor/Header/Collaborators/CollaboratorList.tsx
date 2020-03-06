@@ -10,8 +10,6 @@ import React from 'react';
 
 import { Collaborator, CollaboratorItem, Invitation } from './Collaborator';
 
-y;
-
 const Animated = ({ showMountAnimations, ...props }) => (
   <motion.div
     animate={{ opacity: 1, height: 'auto' }}
