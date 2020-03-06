@@ -99,7 +99,7 @@ export const createLiveClicked: AsyncAction<string> = async (
   effects.live.sendModuleStateSyncRequest();
 };
 
-export const liveMessageReceived: Operator<LiveMessage> = pipe(
+export const liveMessageReceived: Operator<LiveMessage, any> = pipe(
   filter((_, payload) =>
     Object.values(LiveMessageEvent).includes(payload.event)
   ),
@@ -108,6 +108,7 @@ export const liveMessageReceived: Operator<LiveMessage> = pipe(
     [LiveMessageEvent.JOIN]: liveMessage.onJoin,
     [LiveMessageEvent.MODULE_STATE]: liveMessage.onModuleState,
     [LiveMessageEvent.USER_ENTERED]: liveMessage.onUserEntered,
+    [LiveMessageEvent.USERS_CHANGED]: liveMessage.onUsersChanged,
     [LiveMessageEvent.USER_LEFT]: liveMessage.onUserLeft,
     [LiveMessageEvent.EXTERNAL_RESOURCES]: liveMessage.onExternalResources,
     [LiveMessageEvent.MODULE_SAVED]: liveMessage.onModuleSaved,
@@ -167,6 +168,15 @@ export const onSelectionChanged: Action<any> = (
   { state, effects },
   selection
 ) => {
+  // console.log(
+  //   'SELECTION',
+  //   selection.primary.selection[0],
+  //   state.editor.currentModule.code.substr(
+  //     selection.primary.selection[0],
+  //     selection.primary.selection[1] - selection.primary.selection[0]
+  //   ),
+  //   state.editor.currentModule.code.length - selection.primary.selection[1]
+  // );
   if (!state.live.roomInfo) {
     return;
   }

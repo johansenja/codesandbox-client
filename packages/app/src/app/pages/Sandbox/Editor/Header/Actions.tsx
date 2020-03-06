@@ -1,10 +1,12 @@
 import Tooltip from '@codesandbox/common/lib/components/Tooltip';
+import * as featureFlags from '@codesandbox/common/lib/utils/feature-flags';
 import { Avatar, Button, Stack } from '@codesandbox/components';
 import css from '@styled-system/css';
 import { useOvermind } from 'app/overmind';
 import { UserMenu } from 'app/pages/common/UserMenu';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
+import { Collaborators } from './Collaborators';
 import {
   EmbedIcon,
   ForkIcon,
@@ -31,12 +33,32 @@ export const Actions = () => {
       updateStatus,
       user,
       editor: {
-        sandbox: { id, owned, title, description, likeCount, userLiked },
+        sandbox: {
+          id,
+          author,
+          owned,
+          title,
+          description,
+          likeCount,
+          userLiked,
+        },
       },
     },
 
     actions: { signInClicked },
   } = useOvermind();
+  const [fadeIn, setFadeIn] = useState(false);
+
+  useEffect(() => {
+    if (!fadeIn) {
+      const timeoutId = setTimeout(() => {
+        setFadeIn(true);
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+
+    return () => {};
+  }, [fadeIn]);
 
   const handleSignIn = async () => {
     await signInClicked({ useExtraScopes: false });
@@ -47,7 +69,15 @@ export const Actions = () => {
   else primaryAction = owned ? 'Embed' : 'Fork';
 
   return (
-    <Stack align="center" gap={1} css={{ '> button': { width: 'auto' } }}>
+    <Stack
+      align="center"
+      gap={1}
+      css={{ '> button': { width: 'auto' } }}
+      style={{
+        opacity: fadeIn ? 1 : 0,
+        transition: 'opacity 0.25s ease-in-out',
+      }}
+    >
       {updateStatus === 'available' && (
         <TooltipButton
           tooltip="Update Available! Click to Refresh."
@@ -89,6 +119,8 @@ export const Actions = () => {
           <span>{likeCount}</span>
         </Stack>
       )}
+
+      {author && featureFlags.ACCESS_SHEET && <Collaborators />}
 
       {user?.curatorAt && (
         <Button

@@ -26,11 +26,13 @@ import { parseConfigurations } from 'app/overmind/utils/parse-configurations';
 import { json } from 'overmind';
 
 export class EditorSandbox {
-  private currentSandbox: Sandbox = {
+  private currentSandbox: Sandbox = ({
     id: null,
     title: 'New',
     owned: false,
-  } as Sandbox;
+    userLiked: false,
+    likeCount: 0,
+  } as unknown) as Sandbox;
 
   private currentModuleShortid: string | null = null;
   private changedModuleShortids: string[] = [];
@@ -281,7 +283,6 @@ export class EditorSandbox {
   }
 
   shouldDirectoryBeOpen(directoryShortid: string) {
-    console.log('SHOULD IT?');
     const { modules, directories } = this.currentSandbox;
     const currentModuleParents = this.getModuleParents(
       modules,
@@ -510,5 +511,9 @@ export class EditorSandbox {
         }
       }
     });
+  }
+
+  setAuthorization(permission: PermissionType) {
+    this.currentSandbox.authorization = permission;
   }
 }

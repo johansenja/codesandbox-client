@@ -1,5 +1,23 @@
 import React from 'react';
+
 import { Element } from '../Element';
+
+// we use this icon as a error state fallback
+export const notFound = props => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="red"
+    strokeWidth="1"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
 
 /**
  * All icons should be in a 16x16 viewbox
@@ -123,19 +141,62 @@ export const check = props => (
   </Element>
 );
 
-// we use this icon as a error state fallback
-export const notFound = props => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="red"
-    strokeWidth="1"
-    strokeLinecap="round"
-    strokeLinejoin="round"
+export const more = props => (
+  <Element
+    as="svg"
+    viewBox="0 0 16 16"
     xmlns="http://www.w3.org/2000/svg"
     {...props}
   >
-    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M9.55556 1.77778C9.55556 2.75962 8.75962 3.55556 7.77778 3.55556C6.79594 3.55556 6 2.75962 6 1.77778C6 0.795938 6.79594 0 7.77778 0C8.75962 0 9.55556 0.795938 9.55556 1.77778ZM9.55556 8C9.55556 8.98184 8.75962 9.77778 7.77778 9.77778C6.79594 9.77778 6 8.98184 6 8C6 7.01816 6.79594 6.22223 7.77778 6.22223C8.75962 6.22223 9.55556 7.01816 9.55556 8ZM7.77778 16C8.75962 16 9.55556 15.2041 9.55556 14.2222C9.55556 13.2404 8.75962 12.4444 7.77778 12.4444C6.79594 12.4444 6 13.2404 6 14.2222C6 15.2041 6.79594 16 7.77778 16Z"
+      fill="currentColor"
+    />
+  </Element>
+);
+
+export const chevronDown = props => (
+  <Element
+    as="svg"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M8.00006 10.7217L1.02852 3L-3.87318e-07 4.13919L8 13L16 4.13919L14.9091 3L8.00006 10.7217Z"
+      fill="currentColor"
+    />
+  </Element>
+);
+
+export const caret = props => (
+  <Element
+    as="svg"
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M8 12.8608L16 4L-3.87318e-07 4L8 12.8608L16 4L-3.87318e-07 4L8 12.8608Z"
+      fill="currentColor"
+    />
+  </Element>
+);
+
+export const cross = props => (
+  <Element
+    as="svg"
+    viewBox="0 0 16 16"
+    xmlns="http://www.w3.org/2000/svg"
+    {...props}
+  >
+    <path
+      d="M16 1.45455L14.5455 9.97023e-06L8.00001 6.54546L1.45455 0L0 1.45454L6.54546 8L0 14.5455L1.45455 16L8.00001 9.45454L14.5455 16L16 14.5454L9.45455 8L16 1.45455Z"
+      fill="currentColor"
+    />
+  </Element>
 );

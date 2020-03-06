@@ -43,7 +43,12 @@ export const CommitForm = () => {
 
   return (
     <>
-      <Stack as="form" direction="vertical" gap={1} marginX={2}>
+      <Stack
+        as="form"
+        direction="vertical"
+        gap={1}
+        onSubmit={event => event.preventDefault()}
+      >
         <FormField direction="vertical" label="Commit message">
           <Input
             css={css({ marginTop: 2 })}
@@ -60,7 +65,13 @@ export const CommitForm = () => {
             value={description}
           />
         </FormField>
-        <Stack gap={2}>
+        <Stack
+          justify="space-between"
+          marginX={2}
+          css={{
+            button: { width: '40%' },
+          }}
+        >
           {hasWriteAccess(originalGitChanges?.rights) && (
             <Button
               variant="secondary"

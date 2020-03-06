@@ -17,6 +17,20 @@ import { sortObjectByKeys } from 'app/overmind/utils/common';
 import { getTemplate as computeTemplate } from 'codesandbox-import-utils/lib/create-sandbox/templates';
 import { mapValues } from 'lodash-es';
 
+export const initializeSandbox: AsyncAction = async ({
+  state,
+  actions,
+  effects,
+}) => {
+  await Promise.all([
+    actions.editor.internal
+      .initializeLiveSandbox()
+      .then(() => effects.live.sendModuleStateSyncRequest()),
+    actions.editor.loadCollaborators({ sandboxId: state.editor.sandbox.id }),
+    actions.editor.listenToSandboxChanges(),
+  ]);
+};
+
 export const initializeLiveSandbox: AsyncAction = async ({
   state,
   actions,
@@ -35,7 +49,7 @@ export const initializeLiveSandbox: AsyncAction = async ({
     await actions.live.internal.disconnect();
   }
 
-  if (sandbox.owned && sandbox.roomId) {
+  if (sandbox.roomId) {
     await actions.live.internal.initialize(sandbox.roomId);
   }
 };

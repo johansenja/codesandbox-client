@@ -14,6 +14,7 @@ export type SSEContainerStatus =
 export type SSEManagerStatus = 'connected' | 'disconnected' | 'initializing';
 
 export type PermissionType =
+  | 'owner'
   | 'write_code'
   | 'write_project'
   | 'comment'
@@ -214,6 +215,7 @@ export type LiveUser = {
   currentModuleShortid: string | null;
   color: [number, number, number];
   avatarUrl: string;
+  userId: string | null;
 };
 
 export type RoomInfo = {
@@ -307,6 +309,13 @@ export type SandboxAuthor = {
   badges: Badge[];
   subscriptionSince: string | null;
 };
+
+export enum CommentsFilterOption {
+  ALL = 'All',
+  OPEN = 'Open',
+  RESOLVED = 'Resolved',
+  MENTIONS = 'Mentions',
+}
 
 export type Sandbox = {
   id: string;
@@ -683,6 +692,7 @@ export enum LiveMessageEvent {
   MODULE_STATE = 'module_state',
   USER_ENTERED = 'user:entered',
   USER_LEFT = 'user:left',
+  USERS_CHANGED = 'users:changed',
   MODULE_SAVED = 'module:saved',
   MODULE_CREATED = 'module:created',
   MODULE_MASS_CREATED = 'module:mass-created',

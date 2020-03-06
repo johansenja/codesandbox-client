@@ -27,6 +27,7 @@ import { BookmarkTemplateButton } from './BookmarkTemplateButton';
 export const Summary = () => {
   const {
     state: {
+      isLoggedIn,
       editor: { sandbox },
     },
   } = useOvermind();
@@ -78,7 +79,7 @@ export const Summary = () => {
 
         <Stack as="section" direction="vertical" gap={6} paddingX={2}>
           <Stats sandbox={sandbox.get()} />
-          {customTemplate && <BookmarkTemplateButton />}
+          {customTemplate && isLoggedIn && <BookmarkTemplateButton />}
         </Stack>
 
         <Divider marginTop={8} marginBottom={4} />

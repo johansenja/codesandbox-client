@@ -9,10 +9,7 @@ export const ForkButton: FunctionComponent = () => {
       editor: { forkSandboxClicked },
     },
     state: {
-      editor: {
-        sandbox: { owned },
-        isForkingSandbox,
-      },
+      editor: { sandbox, isForkingSandbox },
     },
   } = useOvermind();
 
@@ -20,7 +17,7 @@ export const ForkButton: FunctionComponent = () => {
     <ProgressButton
       loading={isForkingSandbox}
       onClick={forkSandboxClicked}
-      secondary={owned}
+      secondary={sandbox.owned}
       small
     >
       <ForkIcon />

@@ -40,6 +40,14 @@ export const SandboxName: FunctionComponent = () => {
   } = useOvermind();
   const [updatingName, setUpdatingName] = useState(false);
   const [name, setName] = useState('');
+  const spring = useSpring({
+    opacity: updatingName ? 0 : 1,
+    pointerEvents: updatingName ? 'none' : 'initial',
+  });
+
+  if (!sandbox.id) {
+    return null;
+  }
 
   const sandboxName = getSandboxName(sandbox.get()) || 'Untitled';
 
@@ -89,12 +97,7 @@ export const SandboxName: FunctionComponent = () => {
       (sandbox.team ? sandbox.team.name : 'My Sandboxes')
     : 'My Sandboxes';
 
-  const spring = useSpring({
-    opacity: updatingName ? 0 : 1,
-    pointerEvents: updatingName ? 'none' : 'initial',
-  });
-  const owned = sandbox.owned;
-  const customTemplate = sandbox.customTemplate;
+  const { customTemplate, owned } = sandbox;
 
   return (
     <Main>

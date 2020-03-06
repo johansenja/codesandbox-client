@@ -1,5 +1,4 @@
 import { Contributor, PermissionType } from '@codesandbox/common/lib/types';
-import { hasPermission } from '@codesandbox/common/lib/utils/permission';
 import { IDerive, IState } from 'overmind';
 
 import { AsyncAction } from '.';
@@ -103,7 +102,7 @@ export const withOwnedSandbox = <T>(
       if (modalResponse === 'fork') {
         try {
           await actions.editor.internal.forkSandbox({
-            sandboxId: state.editor.sandbox.id!,
+            sandboxId: state.editor.sandbox.id,
           });
         } catch (e) {
           return cancelAction(context, payload);

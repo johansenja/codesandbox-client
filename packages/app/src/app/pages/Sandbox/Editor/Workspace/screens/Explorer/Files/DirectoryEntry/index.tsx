@@ -324,6 +324,11 @@ const DirectoryEntry: React.FunctionComponent<Props> = ({
           />
         </EntryContainer>
       )}
+      <DirectoryEntryModal
+        isOpen={Boolean(modalConfirm)}
+        onClose={closeModals}
+        {...modalConfirm}
+      />
       {open && (
         <Opener open={open}>
           {creating === 'directory' && (
@@ -348,11 +353,6 @@ const DirectoryEntry: React.FunctionComponent<Props> = ({
             markTabsNotDirty={markTabsNotDirty}
             discardModuleChanges={confirmDiscardChanges}
             getModulePath={getModulePath}
-          />
-          <DirectoryEntryModal
-            isOpen={Boolean(modalConfirm)}
-            onClose={closeModals}
-            {...modalConfirm}
           />
           {creating === 'module' && (
             <Entry

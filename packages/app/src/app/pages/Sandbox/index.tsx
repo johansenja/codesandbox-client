@@ -2,13 +2,11 @@ import { Button } from '@codesandbox/common/lib/components/Button';
 import Centered from '@codesandbox/common/lib/components/flex/Centered';
 import Fullscreen from '@codesandbox/common/lib/components/flex/Fullscreen';
 import Padding from '@codesandbox/common/lib/components/spacing/Padding';
-import { Skeleton } from 'app/components/Skeleton';
 import { Title } from 'app/components/Title';
 import { useOvermind } from 'app/overmind';
 import { GithubIntegration } from 'app/pages/common/GithubIntegration';
 import { Navigation } from 'app/pages/common/Navigation';
 import { NotFound } from 'app/pages/common/NotFound';
-import { QuickActions } from 'app/pages/Sandbox/QuickActions';
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
@@ -40,6 +38,7 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
     }
 
     actions.live.onNavigateAway();
+
     actions.editor.sandboxChanged({ id: match.params.id });
   }, [
     actions.live,
@@ -133,25 +132,6 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
       return <NotFound />;
     }
 
-    if (state.editor.isLoading || !state.editor.sandbox) {
-      return (
-        <>
-          <Skeleton
-            titles={[
-              {
-                content: 'Loading Sandbox',
-                delay: 0.6,
-              },
-              {
-                content: 'Fetching git repository...',
-                delay: 2,
-              },
-            ]}
-          />
-        </>
-      );
-    }
-
     return null;
   }
 
@@ -169,9 +149,7 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
           }}
           margin={1}
         >
-          {state.editor.isLoading ? null : (
-            <Navigation title="Sandbox Editor" />
-          )}
+          <Navigation title="Sandbox Editor" />
           <Centered
             style={{ flex: 1, width: '100%', height: '100%' }}
             horizontal
@@ -192,7 +170,6 @@ export const Sandbox: React.FC<Props> = ({ match }) => {
         <title>{sandbox.name} - CodeSandbox</title>
       </Helmet>
       <Editor />
-      <QuickActions />
     </>
   );
 };

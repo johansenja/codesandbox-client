@@ -9,20 +9,22 @@ export const PickButton: FunctionComponent = () => {
       explore: { pickSandboxModal },
     },
     state: {
-      editor: {
-        sandbox: { description, id, owned, title },
-      },
+      editor: { sandbox },
     },
   } = useOvermind();
 
-  const details = {
-    description,
-    id,
-    title,
-  };
-
   return (
-    <Button onClick={() => pickSandboxModal(details)} secondary={owned} small>
+    <Button
+      onClick={() =>
+        pickSandboxModal({
+          description: sandbox.description,
+          id: sandbox.id,
+          title: sandbox.title,
+        })
+      }
+      secondary={sandbox.owned}
+      small
+    >
       Pick
     </Button>
   );

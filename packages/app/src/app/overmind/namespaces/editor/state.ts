@@ -1,6 +1,7 @@
 import { getPreviewTabs } from '@codesandbox/common/lib/templates/devtools';
 import { ViewConfig } from '@codesandbox/common/lib/templates/template';
 import {
+  CommentsFilterOption,
   DevToolsTabPosition,
   DiffTab,
   ModuleTab,
@@ -9,13 +10,17 @@ import {
   WindowOrientation,
 } from '@codesandbox/common/lib/types';
 import { getSandboxOptions } from '@codesandbox/common/lib/url';
+import { CollaboratorFragment, InvitationFragment } from 'app/graphql/types';
 import { Derive } from 'app/overmind';
+import { Comment } from 'app/overmind/effects/fakeGql/comments/types';
 import immer from 'immer';
 
 import { EditorSandbox } from './models/EditorSandbox';
 
 type State = {
   isForkingSandbox: boolean;
+  collaborators: CollaboratorFragment[];
+  invitations: InvitationFragment[];
   // TODO: What is this really? Could not find it in Cerebral, but
   // EditorPreview is using it... weird stuff
   devToolTabs: Derive<State, ViewConfig[]>;
@@ -41,15 +46,72 @@ type State = {
   isAdvancedEditor: Derive<State, boolean>;
   currentDevToolsPosition: DevToolsTabPosition;
   sessionFrozen: boolean;
+  comments: {
+    [sandboxId: string]: {
+      [commentId: string]: Comment;
+    };
+  };
+  currentComments: Derive<State, Comment[]>;
+  selectedCommentsFilter: CommentsFilterOption;
+  currentCommentId: string | null;
+  currentComment: Derive<State, Comment | null>;
 };
 
 export const state: State = {
+  comments: {},
+  currentCommentId: null, // '5e5961e0c277a40fef1e391b',
+  currentComment: ({ comments, sandbox, currentCommentId }) => {
+    if (!comments[sandbox.id] || !currentCommentId) {
+      return null;
+    }
+
+    return comments[sandbox.id][currentCommentId];
+  },
+  selectedCommentsFilter: CommentsFilterOption.OPEN,
+  // eslint-disable-next-line consistent-return
+  currentComments: ({ comments, sandbox, selectedCommentsFilter }) => {
+    if (!comments[sandbox.id]) {
+      return [];
+    }
+
+    function sortByInsertedAt(commentA: Comment, commentB: Comment) {
+      const aDate = new Date(commentA.insertedAt);
+      const bDate = new Date(commentB.insertedAt);
+
+      if (aDate > bDate) {
+        return -1;
+      }
+
+      if (bDate < aDate) {
+        return 1;
+      }
+
+      return 0;
+    }
+
+    switch (selectedCommentsFilter) {
+      case CommentsFilterOption.ALL:
+        return Object.values(comments[sandbox.id]).sort(sortByInsertedAt);
+      case CommentsFilterOption.RESOLVED:
+        return Object.values(comments[sandbox.id])
+          .filter(comment => comment.isResolved)
+          .sort(sortByInsertedAt);
+      case CommentsFilterOption.OPEN:
+        return Object.values(comments[sandbox.id])
+          .filter(comment => !comment.isResolved)
+          .sort(sortByInsertedAt);
+      case CommentsFilterOption.MENTIONS:
+        return Object.values(comments[sandbox.id]).sort(sortByInsertedAt);
+    }
+  },
   isForkingSandbox: false,
   isLoading: true,
   notFound: false,
   error: null,
   isResizing: false,
   modulesByPath: {},
+  collaborators: [],
+  invitations: [],
   currentTabId: null,
   tabs: [],
   sessionFrozen: true,
