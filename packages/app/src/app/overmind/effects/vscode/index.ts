@@ -85,6 +85,7 @@ const context: any = window;
  */
 export class VSCodeEffect {
   public initialized: Promise<unknown>;
+  public editorInitialized = blocker<void>();
   public sandboxFsSync: SandboxFsSync;
   private mountableFilesystem: any;
 
@@ -125,7 +126,6 @@ export class VSCodeEffect {
       getSignal: options.getSignal,
     };
     this.onSelectionChangeDebounced = debounce(options.onSelectionChange, 500);
-
     this.prepareElements();
 
     // We instantly create a sandbox sync, as we want our
@@ -455,7 +455,9 @@ export class VSCodeEffect {
     });
   }
 
-  public setErrors = (errors: ModuleError[]) => {
+  public setErrors = async (errors: ModuleError[]) => {
+    await this.editorInitialized.promise;
+
     const activeEditor = this.editorApi.getActiveCodeEditor();
 
     if (activeEditor) {
@@ -496,7 +498,9 @@ export class VSCodeEffect {
     }
   };
 
-  public setCorrections = (corrections: ModuleCorrection[]) => {
+  public setCorrections = async (corrections: ModuleCorrection[]) => {
+    await this.editorInitialized.promise;
+
     const activeEditor = this.editorApi.getActiveCodeEditor();
     if (activeEditor) {
       if (corrections.length > 0) {
@@ -675,6 +679,10 @@ export class VSCodeEffect {
   }
 
   private async loadEditor(monaco: any, container: HTMLElement) {
+    if (this.editorInitialized.isResolved()) {
+      return Promise.resolve();
+    }
+
     this.monaco = monaco;
     this.workbench = new Workbench(monaco, this.controller, this.runCommand);
 
@@ -809,6 +817,8 @@ export class VSCodeEffect {
         if (this.settings.lintEnabled) {
           this.createLinter();
         }
+
+        this.editorInitialized.resolve();
         resolve();
       });
     });

@@ -566,24 +566,10 @@ export const prettifyClicked: AsyncAction = async ({
 
 // TODO(@CompuIves): Look into whether we even want to call this function.
 // We can probably call the dispatch from the bundler itself instead.
-export const errorsCleared: Action = ({ state, effects }) => {
+export const errorsCleared: Action = ({ state }) => {
   const sandbox = state.editor.sandbox;
-  if (!sandbox) {
-    return;
-  }
 
-  if (sandbox.errors.length) {
-    sandbox.errors.forEach(error => {
-      try {
-        const module = sandbox.getModuleByPath(error.path);
-        module.errors = [];
-      } catch (e) {
-        // Module is probably somewhere in eg. /node_modules which is not
-        // in the store
-      }
-    });
-    sandbox.clearErrors();
-  }
+  sandbox.clearErrors('*');
 };
 
 export const toggleStatusBar: Action = ({ state }) => {
@@ -786,7 +772,7 @@ export const previewActionReceived: Action<any> = (
       const currentErrors = sandbox.errors;
       const newErrors = clearCorrectionsFromAction(currentErrors, action);
 
-      state.editor.sandbox.clearErrors();
+      state.editor.sandbox.clearErrors(action.path);
       newErrors.forEach(error => sandbox.addError(error));
       effects.vscode.setErrors(sandbox.errors);
       break;
@@ -800,7 +786,7 @@ export const previewActionReceived: Action<any> = (
         action
       );
 
-      sandbox.clearCorrections();
+      sandbox.clearCorrections(action.path);
       newCorrections.forEach(correction => sandbox.addCorrection(correction));
       effects.vscode.setCorrections(sandbox.corrections);
       break;

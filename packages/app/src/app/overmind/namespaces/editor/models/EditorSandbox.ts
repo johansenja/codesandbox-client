@@ -464,12 +464,38 @@ export class EditorSandbox {
     );
   }
 
-  clearErrors() {
-    this.errors = [];
+  clearErrors(path: string) {
+    if (path === '*') {
+      this.errors = [];
+      this.currentSandbox.modules.forEach(module => {
+        if (module.errors.length) {
+          module.errors = [];
+        }
+      });
+    } else {
+      this.errors = this.errors.filter(error => error.path !== path);
+      const module = this.getModuleByPath(path);
+      if (module) {
+        module.errors = [];
+      }
+    }
   }
 
-  clearCorrections() {
-    this.corrections = [];
+  clearCorrections(path: string) {
+    if (path === '*') {
+      this.corrections = [];
+      this.currentSandbox.modules.forEach(module => {
+        if (module.corrections.length) {
+          module.corrections = [];
+        }
+      });
+    } else {
+      this.corrections = this.corrections.filter(error => error.path !== path);
+      const module = this.getModuleByPath(path);
+      if (module) {
+        module.corrections = [];
+      }
+    }
   }
 
   setFrozen(isFrozen: boolean) {
