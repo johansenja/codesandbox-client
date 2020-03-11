@@ -71,8 +71,8 @@ export class EditorSandbox {
   private changedModuleShortids: string[] = [];
   public errors: ModuleError[];
   public corrections: ModuleCorrection[];
-  private getModuleParents(modules, directories, id): string[] {
-    const module = modules.find(moduleEntry => moduleEntry.id === id);
+  private getModuleParents(modules, directories, shortid): string[] {
+    const module = modules.find(moduleEntry => moduleEntry.shortid === shortid);
 
     if (!module) return [];
 
