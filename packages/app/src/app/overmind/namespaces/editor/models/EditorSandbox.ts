@@ -6,6 +6,7 @@ import {
   resolveModule,
   resolveModuleWrapped,
 } from '@codesandbox/common/lib/sandbox/modules';
+import { hasPermission } from '@codesandbox/common/lib/utils/permission';
 import getTemplate, { TemplateType } from '@codesandbox/common/lib/templates';
 import { generateFileFromSandbox } from '@codesandbox/common/lib/templates/configuration/package-json';
 import {
@@ -69,8 +70,8 @@ export class EditorSandbox {
 
   private currentModuleShortid: string | null = null;
   private changedModuleShortids: string[] = [];
-  public errors: ModuleError[];
-  public corrections: ModuleCorrection[];
+  public errors: ModuleError[] = [];
+  public corrections: ModuleCorrection[] = [];
   private getModuleParents(modules, directories, shortid): string[] {
     const module = modules.find(moduleEntry => moduleEntry.shortid === shortid);
 
@@ -336,7 +337,7 @@ export class EditorSandbox {
   }
 
   hasPermission(permission: PermissionType) {
-    return this.currentSandbox.authorization === permission;
+    return hasPermission(this.currentSandbox.authorization, permission);
   }
 
   toggleLiked() {
