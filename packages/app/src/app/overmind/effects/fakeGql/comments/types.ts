@@ -4,6 +4,14 @@ export type Message = {
   author?: Author;
 };
 
+export type Reply = {
+  id: string;
+  content?: string;
+  author?: Author;
+  insertedAt?: string;
+  updatedAt?: string;
+};
+
 export type Author = {
   id: string;
   avatarUrl: string;
@@ -14,7 +22,7 @@ export type Comment = {
   id: string;
   isResolved: boolean;
   originalMessage: Message;
-  replies: Message[];
+  replies: Reply[];
   insertedAt: string;
   updatedAt?: string;
   metadata?: string;
@@ -29,7 +37,7 @@ export type CommentsResponse = {
     {
       id: string;
       isResolved: boolean;
-      replies: Pick<Message, 'id'>[];
+      replies: Pick<Reply, 'id'>[];
       originalMessage: Message;
       insertedAt: string;
       updatedAt: string;
@@ -49,7 +57,7 @@ export type AddCommentResponse = {
   addComment: {
     id: string;
     isResolved: boolean;
-    replies: Pick<Message, 'id'>[];
+    replies: Pick<Reply, 'id'>[];
     originalMessage: Message;
     insertedAt: string;
     updatedAt: string;
@@ -98,9 +106,31 @@ export type CommentResponse = {
       id: string;
       content: string;
     };
-    replies: Message[];
+    replies: Reply[];
     insertedAt: string;
     updatedAt: string;
     metadata: string;
+  };
+};
+
+export type DeleteReplyVariables = { replyId: string; commentId: string };
+
+export type DeleteReplyResponse = {
+  deleteReply: {
+    id: string;
+    replies: Reply[];
+  };
+};
+
+export type UpdateReplyVariables = {
+  replyId: string;
+  commentId: string;
+  comment: string;
+};
+
+export type UpdateReplyResponse = {
+  updateReply: {
+    id: string;
+    replies: Reply[];
   };
 };

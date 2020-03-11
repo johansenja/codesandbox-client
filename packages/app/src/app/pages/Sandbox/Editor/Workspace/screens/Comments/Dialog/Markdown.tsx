@@ -6,7 +6,7 @@ import ReactMarkdown from 'react-markdown';
 
 import { Code } from './Code';
 
-export const Comment = ({ source }) => {
+export const Markdown = ({ source }) => {
   const { state } = useOvermind();
   const privateSandbox =
     state.editor.sandbox.privacy === 1 || state.editor.sandbox.privacy === 2;
@@ -28,8 +28,6 @@ export const Comment = ({ source }) => {
 
   return (
     <Element
-      paddingX={4}
-      paddingBottom={6}
       css={css({
         'ul, ol': {
           paddingLeft: 0,
@@ -41,6 +39,9 @@ export const Comment = ({ source }) => {
         'ol li::before': {
           color: 'mutedForeground',
           content: "counter(counter) '. '",
+        },
+        p: {
+          margin: 0,
         },
         li: {
           listStyle: 'none',

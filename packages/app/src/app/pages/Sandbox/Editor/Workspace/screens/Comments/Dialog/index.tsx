@@ -1,10 +1,14 @@
 import { ENTER } from '@codesandbox/common/lib/utils/keycodes';
+import { formatDistance } from 'date-fns';
 import {
   Avatar,
   Element,
   IconButton,
   Stack,
   Text,
+  Link,
+  Button,
+  Menu,
   Textarea,
 } from '@codesandbox/components';
 import css from '@styled-system/css';
@@ -12,8 +16,8 @@ import { useOvermind } from 'app/overmind';
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
-
-import { Comment } from './Comment';
+import { Markdown } from './Markdown';
+import { Reply } from './Reply';
 
 export const CommentDialog = props =>
   ReactDOM.createPortal(<Dialog {...props} />, document.body);
@@ -21,7 +25,10 @@ export const CommentDialog = props =>
 export const Dialog = props => {
   const { state, actions } = useOvermind();
   const [value, setValue] = useState('');
+
+  const [edit, setEdit] = useState(false);
   const comment = state.editor.currentComment;
+  const [editValue, setEditValue] = useState(comment.originalMessage.content);
   const [position, setPosition] = useState({
     x: props.x || 200,
     y: props.y || 100,
@@ -62,74 +69,182 @@ export const Dialog = props => {
           borderRadius: 4,
           width: 420,
           height: 'auto',
-          paddingBottom: 4,
+          maxHeight: '80vh',
+          overflow: 'auto',
+          fontFamily: 'Inter, sans-serif',
+          boxShadow: 2,
         })}
       >
-        <Stack direction="vertical">
-          <Stack
-            className="handle"
-            justify="space-between"
-            padding={2}
-            paddingLeft={4}
-            css={{ cursor: 'move' }}
-            marginBottom={4}
-          >
-            <Stack align="center" gap={2}>
-              <Avatar user={comment.originalMessage.author} />
-              <Text size={3}>{comment.originalMessage.author.username}</Text>
-            </Stack>
-
-            <Stack align="center">
-              <IconButton
-                name="cross"
-                size={3}
-                title="Close comment dialog"
-                onClick={closeDialog}
-              />
-            </Stack>
+        <Stack
+          className="handle"
+          css={{ cursor: 'move' }}
+          align="center"
+          justify="space-between"
+          padding={4}
+          paddingRight={2}
+          marginBottom={2}
+        >
+          <Text size={3} weight="bold">
+            Comment
+          </Text>
+          <Stack align="center">
+            <IconButton
+              onClick={() =>
+                actions.editor.updateComment({
+                  id: comment.id,
+                  data: { isResolved: !comment.isResolved },
+                })
+              }
+              name="check"
+              size={4}
+              title="Resolve Comment"
+              css={css({
+                transition: 'color',
+                transitionDuration: theme => theme.speeds[1],
+                color: comment.isResolved ? 'green' : 'mutedForeground',
+              })}
+            />
+            <IconButton
+              name="cross"
+              size={3}
+              title="Close comment dialog"
+              onClick={closeDialog}
+            />
           </Stack>
-          {comment && (
-            <>
-              <Comment source={comment.originalMessage.content} />
-              {comment.replies.map(c => (
+        </Stack>
+
+        {comment && (
+          <>
+            <Stack
+              align="flex-start"
+              justify="space-between"
+              marginBottom={4}
+              marginLeft={4}
+              marginRight={2}
+            >
+              <Stack gap={2} align="center">
+                <Avatar user={comment.originalMessage.author} />
+                <Stack direction="vertical" justify="center" gap={1}>
+                  <Link
+                    size={3}
+                    weight="bold"
+                    href={`/u/${comment.originalMessage.author.username}`}
+                    variant="body"
+                  >
+                    {comment.originalMessage.author.username}
+                  </Link>
+                  <Text size={2} variant="muted">
+                    {formatDistance(new Date(comment.insertedAt), new Date(), {
+                      addSuffix: true,
+                    })}
+                  </Text>
+                </Stack>
+              </Stack>
+              {state.user.id === comment.originalMessage.author.id && (
+                <Stack align="center">
+                  <Menu>
+                    <Menu.IconButton
+                      name="more"
+                      title="Comment actions"
+                      size={3}
+                    />
+                    <Menu.List>
+                      <Menu.Item
+                        onSelect={() =>
+                          actions.editor.deleteComment({ id: comment.id })
+                        }
+                      >
+                        Delete
+                      </Menu.Item>
+                      <Menu.Item onSelect={() => setEdit(true)}>
+                        Edit Comment
+                      </Menu.Item>
+                    </Menu.List>
+                  </Menu>
+                </Stack>
+              )}
+            </Stack>
+            <Element
+              as={edit ? 'div' : 'p'}
+              marginY={0}
+              marginX={4}
+              paddingBottom={6}
+              css={css({
+                borderBottom: '1px solid',
+                borderColor: 'sideBar.border',
+              })}
+            >
+              {!edit ? (
+                <Markdown source={comment.originalMessage.content} />
+              ) : (
                 <>
+                  <Element marginBottom={2}>
+                    <Textarea
+                      autosize
+                      value={editValue}
+                      onChange={e => setEditValue(e.target.value)}
+                    />
+                  </Element>
                   <Element
-                    paddingX={4}
-                    paddingTop={6}
                     css={css({
-                      borderTop: '1px solid',
-                      borderColor: 'sideBar.border',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr 1fr',
+                      gridGap: 2,
                     })}
                   >
-                    <Stack align="center" gap={2}>
-                      <Avatar user={c.author} />
-                      <Text size={3}>{c.author.username}</Text>
-                    </Stack>
+                    <Button variant="link" onClick={() => setEdit(false)}>
+                      Cancel
+                    </Button>
+
+                    <Button
+                      disabled={!editValue}
+                      variant="secondary"
+                      onClick={async () => {
+                        await actions.editor.updateComment({
+                          id: comment.id,
+                          data: {
+                            comment: editValue,
+                          },
+                        });
+                        setEdit(false);
+                      }}
+                    >
+                      Save
+                    </Button>
                   </Element>
-                  <Comment source={c.content} />
                 </>
-              ))}
-              <Element
-                paddingX={4}
-                css={css({
-                  borderTop: '1px solid',
-                  borderColor: 'sideBar.border',
-                })}
-              >
-                <Textarea
-                  autosize
-                  css={css({ minHeight: 8, overflow: 'hidden' })}
-                  value={value}
-                  onChange={e => setValue(e.target.value)}
-                  placeholder={comment ? 'Reply' : 'Write a comment...'}
-                  onKeyDown={event => {
-                    if (event.keyCode === ENTER && !event.shiftKey) onSubmit();
-                  }}
-                />
-              </Element>
-            </>
-          )}
-        </Stack>
+              )}
+            </Element>
+          </>
+        )}
+
+        {comment &&
+          comment.replies.map(reply => (
+            <Reply {...reply} commentId={comment.id} />
+          ))}
+
+        <Element
+          css={css({
+            borderTop: '1px solid',
+            borderColor: 'sideBar.border',
+          })}
+        >
+          <Textarea
+            autosize
+            css={css({
+              overflow: 'hidden',
+
+              border: 'none',
+              display: 'block',
+            })}
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder={comment ? 'Reply' : 'Write a comment...'}
+            onKeyDown={event => {
+              if (event.keyCode === ENTER && !event.shiftKey) onSubmit();
+            }}
+          />
+        </Element>
       </Element>
     </Draggable>
   );

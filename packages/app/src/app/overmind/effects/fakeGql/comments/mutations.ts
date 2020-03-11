@@ -7,6 +7,10 @@ import {
   DeleteCommentResponse,
   UpdateCommentVariables,
   UpdateCommentResponse,
+  DeleteReplyVariables,
+  DeleteReplyResponse,
+  UpdateReplyResponse,
+  UpdateReplyVariables,
 } from './types';
 
 export const addComment: Query<AddCommentResponse, AddCommentVariables> = gql`
@@ -93,6 +97,56 @@ export const reply: Query<any, any> = gql`
     ) {
       id
       replies {
+        insertedAt
+        updatedAt
+        id
+        content
+        author {
+          id
+          avatarUrl
+          username
+        }
+      }
+    }
+  }
+`;
+
+export const deleteReply: Query<
+  DeleteReplyResponse,
+  DeleteReplyVariables
+> = gql`
+  mutation deleteReply($replyId: String!, $commentId: String!) {
+    deleteReply(replyId: $replyId, commentId: $commentId) {
+      id
+      replies {
+        insertedAt
+        updatedAt
+        id
+        content
+        author {
+          id
+          avatarUrl
+          username
+        }
+      }
+    }
+  }
+`;
+
+export const updateReply: Query<
+  UpdateReplyResponse,
+  UpdateReplyVariables
+> = gql`
+  mutation updateReply(
+    $replyId: String!
+    $commentId: String!
+    $comment: String!
+  ) {
+    updateReply(replyId: $replyId, commentId: $commentId, comment: $comment) {
+      id
+      replies {
+        insertedAt
+        updatedAt
         id
         content
         author {

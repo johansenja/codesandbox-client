@@ -564,6 +564,8 @@ export const prettifyClicked: AsyncAction = async ({
   });
 };
 
+// TODO(@CompuIves): Look into whether we even want to call this function.
+// We can probably call the dispatch from the bundler itself instead.
 export const errorsCleared: Action = ({ state, effects }) => {
   const sandbox = state.editor.sandbox;
   if (!sandbox) {
@@ -1343,19 +1345,30 @@ export const updateComment: AsyncAction<{
   id: string;
   data: {
     comment?: string;
-    isResolved: boolean;
+    isResolved?: boolean;
   };
 }> = async ({ state, effects }, { id, data }) => {
   const sandboxId = state.editor.sandbox.id;
   const isResolved = state.editor.comments[sandboxId][id].isResolved;
   const comment = state.editor.comments[sandboxId][id].originalMessage.content;
+  const currentComment = state.editor.currentComment;
+  const updateIsCurrent =
+    currentComment &&
+    state.editor.comments[sandboxId][id].id === currentComment.id;
 
-  if ('isResolved' in data) {
+  if ('isResolved' in data && data.isResolved) {
     state.editor.comments[sandboxId][id].isResolved = data.isResolved;
+    if (updateIsCurrent && currentComment) {
+      currentComment.isResolved = data.isResolved;
+    }
   }
 
   if ('comment' in data) {
     state.editor.comments[sandboxId][id].originalMessage.content = data.comment;
+
+    if (updateIsCurrent && currentComment) {
+      currentComment.originalMessage.content = data.comment;
+    }
   }
 
   try {
@@ -1369,6 +1382,74 @@ export const updateComment: AsyncAction<{
     );
     state.editor.comments[sandboxId][id].isResolved = isResolved;
     state.editor.comments[sandboxId][id].originalMessage.content = comment;
+    if (updateIsCurrent && currentComment) {
+      currentComment.id = id;
+      currentComment.originalMessage.content = comment;
+    }
+  }
+};
+
+export const deleteReply: AsyncAction<{
+  replyId: string;
+  commentId: string;
+}> = async ({ state, effects }, { replyId, commentId }) => {
+  const sandboxId = state.editor.sandbox.id;
+  const oldReplies = state.editor.comments[sandboxId][commentId];
+
+  state.editor.comments[sandboxId][commentId] = {
+    ...oldReplies,
+    replies: oldReplies.replies.filter(reply => reply.id !== replyId),
+  };
+
+  try {
+    await effects.fakeGql.mutations.deleteReply({ replyId, commentId });
+  } catch (error) {
+    effects.notificationToast.error(
+      'Unable to delete your reply, please try again'
+    );
+    state.editor.comments[sandboxId][commentId] = oldReplies;
+  }
+};
+
+export const updateReply: AsyncAction<{
+  replyId: string;
+  commentId: string;
+  comment: string;
+}> = async (
+  { state, effects },
+  { replyId, commentId, comment: newComment }
+) => {
+  const sandboxId = state.editor.sandbox.id;
+  const old = state.editor.comments[sandboxId][commentId];
+
+  state.editor.comments[sandboxId][commentId] = {
+    ...old,
+    replies: old.replies.map(reply => {
+      if (reply.id === replyId) {
+        return {
+          ...reply,
+          content: newComment,
+        };
+      }
+
+      return reply;
+    }),
+  };
+
+  try {
+    await effects.fakeGql.mutations.updateReply({
+      replyId,
+      commentId,
+      comment: newComment,
+    });
+  } catch (error) {
+    effects.notificationToast.error(
+      'Unable to update your reply, please try again'
+    );
+    state.editor.comments[sandboxId][commentId] = {
+      ...old,
+      replies: old.replies,
+    };
   }
 };
 
@@ -1424,6 +1505,7 @@ export const addReply: AsyncAction<string> = async (
     // sorry
     // @ts-ignore
     replies: state.editor.currentComment.replies.concat({
+      insertedAt: new Date(),
       id: fakeId,
       content: comment,
       author: {
