@@ -1,5 +1,16 @@
 import { getCurrentManager } from '../compile';
 
+export interface IBoilerplate {
+  extension: string;
+  condition: (path: string) => boolean;
+  code: string;
+  /**
+   * Normally we only execute boilerplates in module mode. By setting this to true we will
+   * execute the boilerplate in any mode.
+   */
+  enabledByDefault?: boolean;
+}
+
 let cachedBoilerplates = [];
 
 export async function evalBoilerplates(boilerplates) {
