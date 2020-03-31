@@ -418,6 +418,7 @@ const AddReply = ({ comment, ...props }) => {
         border: 'none',
         borderTop: '1px solid',
         borderColor: 'sideBar.border',
+        borderRadius: 0,
         padding: 4,
       })}
       style={{ minHeight: 54 }}
